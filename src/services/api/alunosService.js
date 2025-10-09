@@ -16,10 +16,14 @@ export const alunosService = {
     return response.data;
   },
 
-  atualizar: async (id, dados) => {
-    const response = await api.put(`/alunos/${id}`, dados);
-    return response.data;
-  },
+atualizar: async (id, dados) => {
+  // Atualiza aluno E pessoa em cascata
+  const response = await api.put(`/alunos/${id}`, {
+    ...dados,
+    atualizarPessoa: true // Flag para backend processar
+  });
+  return response.data;
+}, 
 
   excluir: async (id) => {
     const response = await api.delete(`/alunos/${id}`);

@@ -217,9 +217,9 @@ function App() {
 
       {/* Área de Conteúdo Principal */}
       <main className="flex-1 overflow-auto bg-gray-50">
-        {activeTab ? (
-          renderTabContent(openTabs.find(tab => tab.id === activeTab))
-        ) : (
+        {activeTab && openTabs.length > 0 ? (
+            renderTabContent(openTabs.find(tab => tab.id === activeTab))
+          ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center max-w-md">
               <div className="bg-blue-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
