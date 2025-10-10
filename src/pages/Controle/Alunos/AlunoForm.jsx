@@ -27,31 +27,68 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
       impressaoDigital2: ''
     }
   });
-
-  useEffect(() => {
+useEffect(() => {
     if (aluno) {
+      // Debug: veja a estrutura completa do aluno
+      console.log('🔍 Aluno recebido completo:', JSON.stringify(aluno, null, 2));
+      
+      // Função auxiliar para formatar data ISO para yyyy-MM-dd
+      const formatarData = (data) => {
+        if (!data) return '';
+        return data.split('T')[0];
+      };
+      
       setFormData({
         ...aluno,
-        pessoa: aluno.pessoa || {},
-        enderecos: aluno.pessoa?.enderecos || [],
-        contatos: aluno.pessoa?.contatos || [],
-        vldExameMedico: aluno.vldExameMedico?.split('T')[0] || '',
-        vldAvaliacao: aluno.vldAvaliacao?.split('T')[0] || ''
+        pessoa: {
+          ...aluno.pessoa,
+          dataNascimento: formatarData(aluno.pessoa?.dtNsc || aluno.pessoa?.dataNascimento)
+        },
+        // Tenta buscar endereços de múltiplas possíveis localizações
+        enderecos: aluno.enderecos || aluno.pessoa?.enderecos || [],
+        contatos: aluno.contatos || aluno.pessoa?.contatos || [],
+        vldExameMedico: formatarData(aluno.vldExameMedico),
+        vldAvaliacao: formatarData(aluno.vldAvaliacao),
+        horarios: aluno.horarios || [],
+        controleAcesso: aluno.controleAcesso || {
+          senha: '',
+          impressaoDigital1: '',
+          impressaoDigital2: ''
+        }
       });
     }
   }, [aluno]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSalvar({
-      ...formData,
-      pessoa: {
-        ...formData.pessoa,
-        enderecos: formData.enderecos,
-        contatos: formData.contatos
-      }
-    });
+const handleSubmit = (e) => {
+  e.preventDefault();
+  
+  // ✅ CORREÇÃO: Garantir que endereços e contatos estejam em pessoa
+  const dadosParaSalvar = {
+    pessoaId: formData.pessoaId,
+    vldExameMedico: formData.vldExameMedico,
+    vldAvaliacao: formData.vldAvaliacao,
+    objetivo: formData.objetivo,
+    profissao: formData.profissao,
+    empresa: formData.empresa,
+    responsavel: formData.responsavel,
+    horarios: formData.horarios,
+    controleAcesso: formData.controleAcesso,
+    pessoa: {
+      nome1: formData.pessoa.nome1,
+      nome2: formData.pessoa.nome2,
+      doc1: formData.pessoa.doc1,
+      doc2: formData.pessoa.doc2,
+      dtNsc: formData.pessoa.dtNsc,
+      situacao: formData.pessoa.situacao,
+      enderecos: formData.enderecos,  // ✅ Pega do nível raiz
+      contatos: formData.contatos      // ✅ Pega do nível raiz
+    }
   };
+  
+  console.log('📤 Enviando para backend:', JSON.stringify(dadosParaSalvar, null, 2)); // ← DEBUG
+  
+  onSalvar(dadosParaSalvar);
+};
 
   const handleChange = (campo, valor) => {
     setFormData(prev => ({ ...prev, [campo]: valor }));
@@ -65,22 +102,17 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
   };
 
   // ENDEREÇOS
-  const adicionarEndereco = () => {
-    setFormData(prev => ({
-      ...prev,
-      enderecos: [...prev.enderecos, {
-        tipo: 'Residencial',
-        logradouro: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        estado: '',
-        cep: '',
-        principal: prev.enderecos.length === 0
-      }]
-    }));
-  };
+const adicionarEndereco = () => {
+  setFormData(prev => ({
+    ...prev,
+    enderecos: [...prev.enderecos, {
+      logradouro: '',
+      cep: '',
+      cidade: '',
+      uf: ''  // Mudou de 'estado' para 'uf' (conforme schema)
+    }]
+  }));
+};
 
   const removerEndereco = (index) => {
     setFormData(prev => ({
@@ -99,17 +131,17 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
   };
 
   // CONTATOS
-  const adicionarContato = () => {
-    setFormData(prev => ({
-      ...prev,
-      contatos: [...prev.contatos, {
-        tipo: 'Celular',
-        valor: '',
-        observacao: '',
-        principal: prev.contatos.length === 0
-      }]
-    }));
-  };
+// CONTATOS - Ajustar enum (linha ~83)
+const adicionarContato = () => {
+  setFormData(prev => ({
+    ...prev,
+    contatos: [...prev.contatos, {
+      tipo: 'CELULAR',  // Usar enum: EMAIL, TELEFONE_FIXO, CELULAR
+      valor: ''
+      // Remover: observacao, principal
+    }]
+  }));
+};
 
   const removerContato = (index) => {
     setFormData(prev => ({
@@ -156,23 +188,32 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
     }));
   };
 
-  const toggleDiaSemana = (index, dia) => {
-    setFormData(prev => ({
-      ...prev,
-      horarios: prev.horarios.map((h, i) => {
-        if (i !== index) return h;
-        const dias = h.diasSemana || [];
-        return {
-          ...h,
-          diasSemana: dias.includes(dia) 
-            ? dias.filter(d => d !== dia)
-            : [...dias, dia]
-        };
-      })
-    }));
-  };
+const toggleDiaSemana = (index, diaValue) => {
+  setFormData(prev => ({
+    ...prev,
+    horarios: prev.horarios.map((h, i) => {
+      if (i !== index) return h;
+      const dias = h.diasSemana || [];
+      return {
+        ...h,
+        diasSemana: dias.includes(diaValue) 
+          ? dias.filter(d => d !== diaValue)
+          : [...dias, diaValue]
+      };
+    })
+  }));
+};
 
-  const diasSemana = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB', 'DOM'];
+  const diasSemana = [
+  { label: 'SEG', value: 'SEGUNDA' },
+  { label: 'TER', value: 'TERCA' },
+  { label: 'QUA', value: 'QUARTA' },
+  { label: 'QUI', value: 'QUINTA' },
+  { label: 'SEX', value: 'SEXTA' },
+  { label: 'SAB', value: 'SABADO' },
+  { label: 'DOM', value: 'DOMINGO' }
+];
+
 
   const abas = [
     { id: 'principal', label: 'Dados Principais', icon: '📋' },
@@ -243,218 +284,164 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="000.000.000-00" />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">RG</label>
-                    <input type="text" value={formData.pessoa.doc2}
-                      onChange={(e) => handlePessoaChange('doc2', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="00.000.000-0" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento</label>
-                    <input type="date" value={formData.pessoa.dataNascimento?.split('T')[0] || ''}
-                      onChange={(e) => handlePessoaChange('dataNascimento', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
-                  </div>
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">RG</label>
+  <input 
+    type="text" 
+    value={formData.pessoa.doc2 || ''}  // ✅ Deve estar assim
+    onChange={(e) => handlePessoaChange('doc2', e.target.value)}  // ✅ Deve estar assim
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+    placeholder="00.000.000-0" 
+  />
+</div>
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento</label>
+  <input 
+    type="date" 
+    value={formData.pessoa.dtNsc || ''}  // ✅ Corrigido
+    onChange={(e) => handlePessoaChange('dtNsc', e.target.value)}  // ✅ Corrigido
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+  />
+</div>
+
                 </div>
               </div>
             )}
 
             {/* ABA: ENDEREÇOS */}
-            {abaSelecionada === 'enderecos' && (
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h5 className="font-semibold text-gray-800 flex items-center gap-2">
-                    <MapPin size={20} className="text-blue-600" />
-                    Endereços Cadastrados
-                  </h5>
-                  <button type="button" onClick={adicionarEndereco}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2">
-                    <Plus size={18} />
-                    Adicionar Endereço
-                  </button>
-                </div>
+{abaSelecionada === 'enderecos' && (
+  <div>
+    <div className="flex justify-between items-center mb-4">
+      <h5 className="font-semibold text-gray-800 flex items-center gap-2">
+        <MapPin size={20} className="text-blue-600" />
+        Endereços Cadastrados
+      </h5>
+      <button type="button" onClick={adicionarEndereco}
+        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2">
+        <Plus size={18} />
+        Adicionar Endereço
+      </button>
+    </div>
 
-                <div className="space-y-4">
-                  {formData.enderecos.map((endereco, index) => (
-                    <div key={index} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
-                      <div className="flex justify-between items-start mb-3">
-                        <h6 className="font-medium text-gray-800 flex items-center gap-2">
-                          📍 Endereço {index + 1}
-                          {endereco.principal && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-semibold">
-                              Principal
-                            </span>
-                          )}
-                        </h6>
-                        <button type="button" onClick={() => removerEndereco(index)}
-                          className="text-red-600 hover:bg-red-100 p-1 rounded">
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
+    <div className="space-y-4">
+      {formData.enderecos.map((endereco, index) => (
+        <div key={index} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+          <div className="flex justify-between items-start mb-3">
+            <h6 className="font-medium text-gray-800">📍 Endereço {index + 1}</h6>
+            <button type="button" onClick={() => removerEndereco(index)}
+              className="text-red-600 hover:bg-red-100 p-1 rounded">
+              <Trash2 size={18} />
+            </button>
+          </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                          <select value={endereco.tipo}
-                            onChange={(e) => handleEnderecoChange(index, 'tipo', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="Residencial">Residencial</option>
-                            <option value="Comercial">Comercial</option>
-                            <option value="Outro">Outro</option>
-                          </select>
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">CEP</label>
-                          <input type="text" value={endereco.cep}
-                            onChange={(e) => handleEnderecoChange(index, 'cep', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="00000-000" />
-                        </div>
-                      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">CEP</label>
+              <input type="text" value={endereco.cep || ''}
+                onChange={(e) => handleEnderecoChange(index, 'cep', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="00000-000" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Logradouro</label>
+              <input type="text" value={endereco.logradouro || ''}
+                onChange={(e) => handleEnderecoChange(index, 'logradouro', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="Rua, Avenida..." />
+            </div>
+          </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3">
-                        <div className="md:col-span-3">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Logradouro</label>
-                          <input type="text" value={endereco.logradouro}
-                            onChange={(e) => handleEnderecoChange(index, 'logradouro', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Rua, Avenida..." />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Número</label>
-                          <input type="text" value={endereco.numero}
-                            onChange={(e) => handleEnderecoChange(index, 'numero', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Nº" />
-                        </div>
-                      </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+              <input type="text" value={endereco.cidade || ''}
+                onChange={(e) => handleEnderecoChange(index, 'cidade', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="Cidade" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">UF</label>
+              <input type="text" value={endereco.uf || ''}
+                onChange={(e) => handleEnderecoChange(index, 'uf', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="SP" maxLength="2" />
+            </div>
+          </div>
+        </div>
+      ))}
 
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3">
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Complemento</label>
-                          <input type="text" value={endereco.complemento}
-                            onChange={(e) => handleEnderecoChange(index, 'complemento', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Apto, Bloco..." />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
-                          <input type="text" value={endereco.bairro}
-                            onChange={(e) => handleEnderecoChange(index, 'bairro', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Bairro" />
-                        </div>
-                      </div>
+      {formData.enderecos.length === 0 && (
+        <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+          <MapPin size={48} className="mx-auto mb-3 text-gray-400" />
+          <p className="font-medium">Nenhum endereço cadastrado</p>
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
-                          <input type="text" value={endereco.cidade}
-                            onChange={(e) => handleEnderecoChange(index, 'cidade', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Cidade" />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                          <input type="text" value={endereco.estado}
-                            onChange={(e) => handleEnderecoChange(index, 'estado', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="UF" maxLength="2" />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {formData.enderecos.length === 0 && (
-                    <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
-                      <MapPin size={48} className="mx-auto mb-3 text-gray-400" />
-                      <p className="font-medium">Nenhum endereço cadastrado</p>
-                      <p className="text-sm">Clique em "Adicionar Endereço" para começar</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* ABA: CONTATOS */}
-            {abaSelecionada === 'contatos' && (
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h5 className="font-semibold text-gray-800 flex items-center gap-2">
-                    <Phone size={20} className="text-blue-600" />
-                    Contatos Cadastrados
-                  </h5>
-                  <button type="button" onClick={adicionarContato}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2">
-                    <Plus size={18} />
-                    Adicionar Contato
-                  </button>
-                </div>
+{abaSelecionada === 'contatos' && (
+  <div>
+    <div className="flex justify-between items-center mb-4">
+      <h5 className="font-semibold text-gray-800 flex items-center gap-2">
+        <Phone size={20} className="text-blue-600" />
+        Contatos Cadastrados
+      </h5>
+      <button type="button" onClick={adicionarContato}
+        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2">
+        <Plus size={18} />
+        Adicionar Contato
+      </button>
+    </div>
 
-                <div className="space-y-4">
-                  {formData.contatos.map((contato, index) => (
-                    <div key={index} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
-                      <div className="flex justify-between items-start mb-3">
-                        <h6 className="font-medium text-gray-800 flex items-center gap-2">
-                          📞 Contato {index + 1}
-                          {contato.principal && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-semibold">
-                              Principal
-                            </span>
-                          )}
-                        </h6>
-                        <button type="button" onClick={() => removerContato(index)}
-                          className="text-red-600 hover:bg-red-100 p-1 rounded">
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
+    <div className="space-y-4">
+      {formData.contatos.map((contato, index) => (
+        <div key={index} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+          <div className="flex justify-between items-start mb-3">
+            <h6 className="font-medium text-gray-800">📞 Contato {index + 1}</h6>
+            <button type="button" onClick={() => removerContato(index)}
+              className="text-red-600 hover:bg-red-100 p-1 rounded">
+              <Trash2 size={18} />
+            </button>
+          </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                          <select value={contato.tipo}
-                            onChange={(e) => handleContatoChange(index, 'tipo', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            <option value="Celular">Celular</option>
-                            <option value="Telefone">Telefone Fixo</option>
-                            <option value="WhatsApp">WhatsApp</option>
-                            <option value="Email">E-mail</option>
-                            <option value="Outro">Outro</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            {contato.tipo === 'Email' ? 'E-mail' : 'Número/Contato'}
-                          </label>
-                          <input type={contato.tipo === 'Email' ? 'email' : 'text'}
-                            value={contato.valor}
-                            onChange={(e) => handleContatoChange(index, 'valor', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder={contato.tipo === 'Email' ? 'email@exemplo.com' : '(00) 00000-0000'} />
-                        </div>
-                      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+              <select value={contato.tipo || 'CELULAR'}
+                onChange={(e) => handleContatoChange(index, 'tipo', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="CELULAR">Celular</option>
+                <option value="TELEFONE_FIXO">Telefone Fixo</option>
+                <option value="EMAIL">E-mail</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {contato.tipo === 'EMAIL' ? 'E-mail' : 'Número'}
+              </label>
+              <input 
+                type={contato.tipo === 'EMAIL' ? 'email' : 'text'}
+                value={contato.valor || ''}
+                onChange={(e) => handleContatoChange(index, 'valor', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder={contato.tipo === 'EMAIL' ? 'email@exemplo.com' : '(00) 00000-0000'} />
+            </div>
+          </div>
+        </div>
+      ))}
 
-                      <div className="mt-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Observação</label>
-                        <input type="text" value={contato.observacao}
-                          onChange={(e) => handleContatoChange(index, 'observacao', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                          placeholder="Ex: Contato comercial, recado..." />
-                      </div>
-                    </div>
-                  ))}
-
-                  {formData.contatos.length === 0 && (
-                    <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
-                      <Phone size={48} className="mx-auto mb-3 text-gray-400" />
-                      <p className="font-medium">Nenhum contato cadastrado</p>
-                      <p className="text-sm">Clique em "Adicionar Contato" para começar</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+      {formData.contatos.length === 0 && (
+        <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+          <Phone size={48} className="mx-auto mb-3 text-gray-400" />
+          <p className="font-medium">Nenhum contato cadastrado</p>
+        </div>
+      )}
+    </div>
+  </div>
+)}
 
             {/* ABA: DADOS ADICIONAIS */}
             {abaSelecionada === 'adicionais' && (
@@ -541,22 +528,22 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Dias da Semana</label>
-                        <div className="flex flex-wrap gap-2">
-                          {diasSemana.map(dia => (
-                            <button key={dia} type="button"
-                              onClick={() => toggleDiaSemana(index, dia)}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                horario.diasSemana?.includes(dia)
-                                  ? 'bg-blue-600 text-white shadow-md'
-                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                              }`}>
-                              {dia}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">Dias da Semana</label>
+  <div className="flex flex-wrap gap-2">
+    {diasSemana.map(dia => (
+      <button key={dia.value} type="button"
+        onClick={() => toggleDiaSemana(index, dia.value)}
+        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          horario.diasSemana?.includes(dia.value)
+            ? 'bg-blue-600 text-white shadow-md'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+        }`}>
+        {dia.label}
+      </button>
+    ))}
+  </div>
+</div>
                     </div>
                   ))}
                   {formData.horarios.length === 0 && (
