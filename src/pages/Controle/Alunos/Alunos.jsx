@@ -3,6 +3,8 @@ import { Users, Search, Loader, Edit, Trash2, Plus } from 'lucide-react';
 import { alunosService } from '../../../services/api/alunosService';
 import AlunoForm from './AlunoForm';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
+import { pessoasService } from '../../../services/api/pessoasService';
+
 
 function Alunos() {
   const [alunos, setAlunos] = useState([]);
@@ -11,6 +13,7 @@ function Alunos() {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [alunoSelecionado, setAlunoSelecionado] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, aluno: null });
+  const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
     carregarAlunos();
@@ -35,24 +38,69 @@ function Alunos() {
     setMostrarForm(true);
   };
 
-  const handleEditarAluno = (aluno) => {
-    setAlunoSelecionado(aluno);
+const handleEditarAluno = async (aluno) => {
+  try {
+    // ✅ Buscar dados completos do aluno antes de editar
+    const alunoCompleto = await alunosService.buscarPorId(aluno.id);
+    setAlunoSelecionado(alunoCompleto.data); // ← Importante: usar .data
     setMostrarForm(true);
-  };
+  } catch (error) {
+    alert('Erro ao carregar dados do aluno: ' + error.message);
+  }
+};
 
-  const handleSalvarAluno = async (dados) => {
-    try {
-      if (alunoSelecionado) {
-        await alunosService.atualizar(alunoSelecionado.id, dados);
-      } else {
-        await alunosService.criar(dados);
+
+const handleSalvarAluno = async (dados) => {
+  try {
+    setSalvando(true);
+    
+    if (alunoSelecionado) {
+      // ✅ EDIÇÃO: Atualiza pessoa e aluno
+      if (dados.pessoa) {
+        await pessoasService.atualizar(dados.pessoaId, dados.pessoa);
       }
-      setMostrarForm(false);
-      carregarAlunos();
-    } catch (error) {
-      alert('Erro ao salvar aluno: ' + error.message);
+      await alunosService.atualizar(alunoSelecionado.id, {
+        ...dados,
+        pessoa: undefined // Remove do payload do aluno
+      });
+    } else {
+      // ✅ CRIAÇÃO: Cria pessoa primeiro, depois aluno
+      console.log('👤 Criando pessoa:', dados.pessoa);
+      const pessoaCriada = await pessoasService.criar(dados.pessoa);
+      console.log('✅ Pessoa criada:', pessoaCriada);
+      
+      // Pega o ID da pessoa criada (ajuste conforme retorno do backend)
+      const pessoaId = pessoaCriada.id || pessoaCriada.data?.id;
+      
+      console.log('👨‍🎓 Criando aluno com pessoaId:', pessoaId);
+      const dadosAluno = {
+        pessoaId,
+        vldExameMedico: dados.vldExameMedico,
+        vldAvaliacao: dados.vldAvaliacao,
+        objetivo: dados.objetivo,
+        profissao: dados.profissao,
+        empresa: dados.empresa,
+        responsavel: dados.responsavel,
+        horarios: dados.horarios,
+        controleAcesso: dados.controleAcesso
+      };
+      
+      const alunoCriado = await alunosService.criar(dadosAluno);
+      console.log('✅ Aluno criado:', alunoCriado);
     }
-  };
+    
+    setMostrarForm(false);
+    setAlunoSelecionado(null);
+    await carregarAlunos();
+  } catch (error) {
+    console.error('❌ Erro detalhado:', error);
+    console.error('❌ Resposta do servidor:', error.response?.data);
+    alert('Erro ao salvar aluno: ' + (error.response?.data?.error || error.response?.data?.message || error.message));
+  } finally {
+    setSalvando(false);
+  }
+};
+
 
   const handleConfirmarExclusao = (aluno) => {
     setConfirmDelete({ isOpen: true, aluno });
@@ -157,13 +205,17 @@ function Alunos() {
         )}
       </div>
 
-      {mostrarForm && (
-        <AlunoForm
-          aluno={alunoSelecionado}
-          onSalvar={handleSalvarAluno}
-          onCancelar={() => setMostrarForm(false)}
-        />
-      )}
+{mostrarForm && (
+  <AlunoForm
+    aluno={alunoSelecionado}
+    onSalvar={handleSalvarAluno}
+    onCancelar={() => {
+      setMostrarForm(false);
+      setAlunoSelecionado(null); // ✅ Limpar ao cancelar
+    }}
+    salvando={salvando} // ✅ Nova prop
+  />
+)}
 
       <ConfirmDialog
         isOpen={confirmDelete.isOpen}

@@ -11,7 +11,7 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
       doc1: '',
       doc2: '',
       dataNascimento: '',
-      situacao: 'Ativo'
+      situacao: 'ATIVO'
     },
     enderecos: [],
     contatos: [],
@@ -27,66 +27,86 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
       impressaoDigital2: ''
     }
   });
-useEffect(() => {
-    if (aluno) {
-      // Debug: veja a estrutura completa do aluno
-      console.log('🔍 Aluno recebido completo:', JSON.stringify(aluno, null, 2));
-      
-      // Função auxiliar para formatar data ISO para yyyy-MM-dd
-      const formatarData = (data) => {
-        if (!data) return '';
-        return data.split('T')[0];
-      };
-      
-      setFormData({
-        ...aluno,
-        pessoa: {
-          ...aluno.pessoa,
-          dataNascimento: formatarData(aluno.pessoa?.dtNsc || aluno.pessoa?.dataNascimento)
-        },
-        // Tenta buscar endereços de múltiplas possíveis localizações
-        enderecos: aluno.enderecos || aluno.pessoa?.enderecos || [],
-        contatos: aluno.contatos || aluno.pessoa?.contatos || [],
-        vldExameMedico: formatarData(aluno.vldExameMedico),
-        vldAvaliacao: formatarData(aluno.vldAvaliacao),
-        horarios: aluno.horarios || [],
-        controleAcesso: aluno.controleAcesso || {
-          senha: '',
-          impressaoDigital1: '',
-          impressaoDigital2: ''
-        }
-      });
-    }
-  }, [aluno]);
+
+  useEffect(() => {
+  if (aluno) {
+    console.log('🔍 Aluno recebido completo:', JSON.stringify(aluno, null, 2));
+    
+    const formatarData = (data) => {
+      if (!data) return '';
+      return data.split('T')[0];
+    };
+    
+    // ✅ Garantir arrays válidos de endereços e contatos
+    const enderecosArray = Array.isArray(aluno.pessoa?.enderecos) 
+      ? aluno.pessoa.enderecos 
+      : (aluno.enderecos || []);
+    
+    const contatosArray = Array.isArray(aluno.pessoa?.contatos)
+      ? aluno.pessoa.contatos
+      : (aluno.contatos || []);
+    
+    setFormData({
+      pessoaId: aluno.pessoaId || aluno.pessoa?.id || '',
+      pessoa: {
+        nome1: aluno.pessoa?.nome1 || '',
+        nome2: aluno.pessoa?.nome2 || '',
+        doc1: aluno.pessoa?.doc1 || '',
+        doc2: aluno.pessoa?.doc2 || '',
+        dtNsc: formatarData(aluno.pessoa?.dtNsc),
+        situacao: aluno.pessoa?.situacao || 'ATIVO'
+      },
+      enderecos: enderecosArray,
+      contatos: contatosArray,
+      vldExameMedico: formatarData(aluno.vldExameMedico),
+      vldAvaliacao: formatarData(aluno.vldAvaliacao),
+      objetivo: aluno.objetivo || '',
+      profissao: aluno.profissao || '',
+      empresa: aluno.empresa || '',
+      responsavel: aluno.responsavel || null,
+      horarios: aluno.horarios || [],
+      controleAcesso: {
+        senha: '', // ❌ Nunca preencher senha hasheada
+        impressaoDigital1: aluno.controleAcesso?.impressaoDigital1 || '',
+        impressaoDigital2: aluno.controleAcesso?.impressaoDigital2 || ''
+      }
+    });
+  }
+}, [aluno]);
 
 const handleSubmit = (e) => {
   e.preventDefault();
   
-  // ✅ CORREÇÃO: Garantir que endereços e contatos estejam em pessoa
   const dadosParaSalvar = {
-    pessoaId: formData.pessoaId,
-    vldExameMedico: formData.vldExameMedico,
-    vldAvaliacao: formData.vldAvaliacao,
-    objetivo: formData.objetivo,
-    profissao: formData.profissao,
-    empresa: formData.empresa,
-    responsavel: formData.responsavel,
-    horarios: formData.horarios,
-    controleAcesso: formData.controleAcesso,
+    // ✅ Só incluir pessoaId se existir (edição)
+    ...(formData.pessoaId && { pessoaId: formData.pessoaId }),
+    vldExameMedico: formData.vldExameMedico || null,
+    vldAvaliacao: formData.vldAvaliacao || null,
+    objetivo: formData.objetivo || '',
+    profissao: formData.profissao || '',
+    empresa: formData.empresa || '',
+    responsavel: formData.responsavel || null,
+    horarios: formData.horarios || [],
+    controleAcesso: {
+      ...(formData.controleAcesso.senha && { senha: formData.controleAcesso.senha }),
+      impressaoDigital1: formData.controleAcesso.impressaoDigital1 || '',
+      impressaoDigital2: formData.controleAcesso.impressaoDigital2 || ''
+    },
     pessoa: {
+      codigo: formData.pessoa.codigo,
+      tipo: 'FISICA',
       nome1: formData.pessoa.nome1,
-      nome2: formData.pessoa.nome2,
+      nome2: formData.pessoa.nome2 || '',
       doc1: formData.pessoa.doc1,
-      doc2: formData.pessoa.doc2,
-      dtNsc: formData.pessoa.dtNsc,
+      doc2: formData.pessoa.doc2 || '',
+      dtNsc: formData.pessoa.dtNsc || null,
       situacao: formData.pessoa.situacao,
-      enderecos: formData.enderecos,  // ✅ Pega do nível raiz
-      contatos: formData.contatos      // ✅ Pega do nível raiz
+      enderecos: formData.enderecos,
+      contatos: formData.contatos
     }
   };
   
-  console.log('📤 Enviando para backend:', JSON.stringify(dadosParaSalvar, null, 2)); // ← DEBUG
-  
+  console.log('📤 Enviando para backend:', JSON.stringify(dadosParaSalvar, null, 2));
   onSalvar(dadosParaSalvar);
 };
 
@@ -565,17 +585,26 @@ const toggleDiaSemana = (index, diaValue) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Senha de Acesso *</label>
-                  <input type="password" required value={formData.controleAcesso.senha}
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      controleAcesso: { ...prev.controleAcesso, senha: e.target.value }
-                    }))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="Digite a senha (mínimo 4 dígitos)"
-                    minLength="4" />
-                  <p className="text-xs text-gray-500 mt-1">Senha numérica para catraca/controle de acesso</p>
-                </div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Senha de Acesso {aluno ? '' : '*'}
+  </label>
+  <input 
+    type="password" 
+    required={!aluno}
+    value={formData.controleAcesso.senha}
+    onChange={(e) => setFormData(prev => ({
+      ...prev,
+      controleAcesso: { ...prev.controleAcesso, senha: e.target.value }
+    }))}
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+    placeholder={aluno ? "Deixe em branco para manter a atual" : "Digite a senha (mínimo 4 dígitos)"}
+    minLength="4" />
+  <p className="text-xs text-gray-500 mt-1">
+    {aluno 
+      ? "Preencha apenas se desejar alterar a senha" 
+      : "Senha numérica para catraca/controle de acesso"}
+  </p>
+</div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
