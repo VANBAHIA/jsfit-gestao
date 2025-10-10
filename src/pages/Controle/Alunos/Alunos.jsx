@@ -19,19 +19,23 @@ function Alunos() {
     carregarAlunos();
   }, []);
 
-  const carregarAlunos = async () => {
-    try {
-      setLoading(true);
-      const dados = await alunosService.listarTodos();
-      setAlunos(dados.data || []);
-      setErro(null);
-    } catch (error) {
-      setErro('Erro ao carregar alunos');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+const carregarAlunos = async () => {
+  try {
+    setLoading(true);
+    const resposta = await alunosService.listarTodos();
+    console.log('📦 Resposta da API:', resposta); // ← DEBUG
+    
+    // ✅ Se a API retorna { data: { data: [...], pagination: {...} } }
+    setAlunos(resposta.data?.data || resposta.data || []);
+    
+    setErro(null);
+  } catch (error) {
+    setErro('Erro ao carregar alunos');
+    console.error('❌ Erro:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleNovoAluno = () => {
     setAlunoSelecionado(null);
@@ -40,9 +44,9 @@ function Alunos() {
 
 const handleEditarAluno = async (aluno) => {
   try {
-    // ✅ Buscar dados completos do aluno antes de editar
-    const alunoCompleto = await alunosService.buscarPorId(aluno.id);
-    setAlunoSelecionado(alunoCompleto.data); // ← Importante: usar .data
+    const resposta = await alunosService.buscarPorId(aluno.id);
+    console.log('📥 Aluno completo:', resposta); // ← DEBUG
+    setAlunoSelecionado(resposta.data);
     setMostrarForm(true);
   } catch (error) {
     alert('Erro ao carregar dados do aluno: ' + error.message);
@@ -50,56 +54,52 @@ const handleEditarAluno = async (aluno) => {
 };
 
 
-const handleSalvarAluno = async (dados) => {
-  try {
-    setSalvando(true);
-    
-    if (alunoSelecionado) {
-      // ✅ EDIÇÃO: Atualiza pessoa e aluno
-      if (dados.pessoa) {
-        await pessoasService.atualizar(dados.pessoaId, dados.pessoa);
+  const handleSalvarAluno = async (dados) => {
+    try {
+      setSalvando(true);
+
+      if (alunoSelecionado) {
+        // ✅ EDIÇÃO: Envia tudo junto (backend faz a transação)
+        await alunosService.atualizar(alunoSelecionado.id, {
+          pessoa: dados.pessoa,
+          aluno: {
+            vldExameMedico: dados.vldExameMedico,
+            vldAvaliacao: dados.vldAvaliacao,
+            objetivo: dados.objetivo,
+            profissao: dados.profissao,
+            empresa: dados.empresa,
+            responsavel: dados.responsavel,
+            horarios: dados.horarios,
+            controleAcesso: dados.controleAcesso.senha ? dados.controleAcesso : undefined
+          }
+        });
+      } else {
+        // ✅ CRIAÇÃO: Pessoa + Aluno em transação
+        await alunosService.criar({
+          pessoa: dados.pessoa,
+          aluno: {
+            vldExameMedico: dados.vldExameMedico,
+            vldAvaliacao: dados.vldAvaliacao,
+            objetivo: dados.objetivo,
+            profissao: dados.profissao,
+            empresa: dados.empresa,
+            responsavel: dados.responsavel,
+            horarios: dados.horarios,
+            controleAcesso: dados.controleAcesso
+          }
+        });
       }
-      await alunosService.atualizar(alunoSelecionado.id, {
-        ...dados,
-        pessoa: undefined // Remove do payload do aluno
-      });
-    } else {
-      // ✅ CRIAÇÃO: Cria pessoa primeiro, depois aluno
-      console.log('👤 Criando pessoa:', dados.pessoa);
-      const pessoaCriada = await pessoasService.criar(dados.pessoa);
-      console.log('✅ Pessoa criada:', pessoaCriada);
-      
-      // Pega o ID da pessoa criada (ajuste conforme retorno do backend)
-      const pessoaId = pessoaCriada.id || pessoaCriada.data?.id;
-      
-      console.log('👨‍🎓 Criando aluno com pessoaId:', pessoaId);
-      const dadosAluno = {
-        pessoaId,
-        vldExameMedico: dados.vldExameMedico,
-        vldAvaliacao: dados.vldAvaliacao,
-        objetivo: dados.objetivo,
-        profissao: dados.profissao,
-        empresa: dados.empresa,
-        responsavel: dados.responsavel,
-        horarios: dados.horarios,
-        controleAcesso: dados.controleAcesso
-      };
-      
-      const alunoCriado = await alunosService.criar(dadosAluno);
-      console.log('✅ Aluno criado:', alunoCriado);
+
+      setMostrarForm(false);
+      setAlunoSelecionado(null);
+      await carregarAlunos();
+    } catch (error) {
+      console.error('❌ Erro:', error.response?.data || error.message);
+      alert('Erro ao salvar: ' + (error.response?.data?.message || error.message));
+    } finally {
+      setSalvando(false);
     }
-    
-    setMostrarForm(false);
-    setAlunoSelecionado(null);
-    await carregarAlunos();
-  } catch (error) {
-    console.error('❌ Erro detalhado:', error);
-    console.error('❌ Resposta do servidor:', error.response?.data);
-    alert('Erro ao salvar aluno: ' + (error.response?.data?.error || error.response?.data?.message || error.message));
-  } finally {
-    setSalvando(false);
-  }
-};
+  };
 
 
   const handleConfirmarExclusao = (aluno) => {
@@ -172,11 +172,10 @@ const handleSalvarAluno = async (dados) => {
                     {aluno.pessoa?.doc1 || 'N/A'}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                      aluno.pessoa?.situacao === 'Ativo' 
-                        ? 'bg-green-100 text-green-800' 
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${aluno.pessoa?.situacao === 'Ativo'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
-                    }`}>
+                      }`}>
                       {aluno.pessoa?.situacao || 'N/A'}
                     </span>
                   </td>
@@ -205,17 +204,17 @@ const handleSalvarAluno = async (dados) => {
         )}
       </div>
 
-{mostrarForm && (
-  <AlunoForm
-    aluno={alunoSelecionado}
-    onSalvar={handleSalvarAluno}
-    onCancelar={() => {
-      setMostrarForm(false);
-      setAlunoSelecionado(null); // ✅ Limpar ao cancelar
-    }}
-    salvando={salvando} // ✅ Nova prop
-  />
-)}
+      {mostrarForm && (
+        <AlunoForm
+          aluno={alunoSelecionado}
+          onSalvar={handleSalvarAluno}
+          onCancelar={() => {
+            setMostrarForm(false);
+            setAlunoSelecionado(null); // ✅ Limpar ao cancelar
+          }}
+          salvando={salvando} // ✅ Nova prop
+        />
+      )}
 
       <ConfirmDialog
         isOpen={confirmDelete.isOpen}

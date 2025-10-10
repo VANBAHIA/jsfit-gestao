@@ -29,86 +29,77 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
   });
 
   useEffect(() => {
-  if (aluno) {
-    console.log('🔍 Aluno recebido completo:', JSON.stringify(aluno, null, 2));
-    
-    const formatarData = (data) => {
-      if (!data) return '';
-      return data.split('T')[0];
-    };
-    
-    // ✅ Garantir arrays válidos de endereços e contatos
-    const enderecosArray = Array.isArray(aluno.pessoa?.enderecos) 
-      ? aluno.pessoa.enderecos 
-      : (aluno.enderecos || []);
-    
-    const contatosArray = Array.isArray(aluno.pessoa?.contatos)
-      ? aluno.pessoa.contatos
-      : (aluno.contatos || []);
-    
-    setFormData({
-      pessoaId: aluno.pessoaId || aluno.pessoa?.id || '',
-      pessoa: {
-        nome1: aluno.pessoa?.nome1 || '',
-        nome2: aluno.pessoa?.nome2 || '',
-        doc1: aluno.pessoa?.doc1 || '',
-        doc2: aluno.pessoa?.doc2 || '',
-        dtNsc: formatarData(aluno.pessoa?.dtNsc),
-        situacao: aluno.pessoa?.situacao || 'ATIVO'
-      },
-      enderecos: enderecosArray,
-      contatos: contatosArray,
-      vldExameMedico: formatarData(aluno.vldExameMedico),
-      vldAvaliacao: formatarData(aluno.vldAvaliacao),
-      objetivo: aluno.objetivo || '',
-      profissao: aluno.profissao || '',
-      empresa: aluno.empresa || '',
-      responsavel: aluno.responsavel || null,
-      horarios: aluno.horarios || [],
-      controleAcesso: {
-        senha: '', // ❌ Nunca preencher senha hasheada
-        impressaoDigital1: aluno.controleAcesso?.impressaoDigital1 || '',
-        impressaoDigital2: aluno.controleAcesso?.impressaoDigital2 || ''
-      }
-    });
-  }
-}, [aluno]);
+    if (aluno) {
+      console.log('🔍 Dados recebidos no form:', JSON.stringify(aluno, null, 2));
 
-const handleSubmit = (e) => {
-  e.preventDefault();
-  
-  const dadosParaSalvar = {
-    // ✅ Só incluir pessoaId se existir (edição)
-    ...(formData.pessoaId && { pessoaId: formData.pessoaId }),
-    vldExameMedico: formData.vldExameMedico || null,
-    vldAvaliacao: formData.vldAvaliacao || null,
-    objetivo: formData.objetivo || '',
-    profissao: formData.profissao || '',
-    empresa: formData.empresa || '',
-    responsavel: formData.responsavel || null,
-    horarios: formData.horarios || [],
-    controleAcesso: {
-      ...(formData.controleAcesso.senha && { senha: formData.controleAcesso.senha }),
-      impressaoDigital1: formData.controleAcesso.impressaoDigital1 || '',
-      impressaoDigital2: formData.controleAcesso.impressaoDigital2 || ''
-    },
-    pessoa: {
-      codigo: formData.pessoa.codigo,
-      tipo: 'FISICA',
-      nome1: formData.pessoa.nome1,
-      nome2: formData.pessoa.nome2 || '',
-      doc1: formData.pessoa.doc1,
-      doc2: formData.pessoa.doc2 || '',
-      dtNsc: formData.pessoa.dtNsc || null,
-      situacao: formData.pessoa.situacao,
-      enderecos: formData.enderecos,
-      contatos: formData.contatos
+      const formatarData = (data) => {
+        if (!data) return '';
+        return data.split('T')[0];
+      };
+
+      setFormData({
+        pessoaId: aluno.pessoaId || aluno.pessoa?.id || '',
+        pessoa: {
+          codigo: aluno.pessoa?.codigo || '',
+          nome1: aluno.pessoa?.nome1 || '',
+          nome2: aluno.pessoa?.nome2 || '',
+          doc1: aluno.pessoa?.doc1 || '',
+          doc2: aluno.pessoa?.doc2 || '',
+          dtNsc: formatarData(aluno.pessoa?.dtNsc),
+          situacao: aluno.pessoa?.situacao || 'ATIVO'
+        },
+        enderecos: aluno.pessoa?.enderecos || [],
+        contatos: aluno.pessoa?.contatos || [],
+        vldExameMedico: formatarData(aluno.vldExameMedico),
+        vldAvaliacao: formatarData(aluno.vldAvaliacao),
+        objetivo: aluno.objetivo || '',
+        profissao: aluno.profissao || '',
+        empresa: aluno.empresa || '',
+        responsavel: aluno.responsavel || null,
+        horarios: aluno.horarios || [],
+        controleAcesso: {
+          senha: '',
+          impressaoDigital1: aluno.controleAcesso?.impressaoDigital1 || '',
+          impressaoDigital2: aluno.controleAcesso?.impressaoDigital2 || ''
+        }
+      });
+
+      console.log('✅ FormData preenchido'); // ← Confirmar
     }
+  }, [aluno]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const dadosParaSalvar = {
+      pessoa: {
+        ...(formData.pessoa.codigo && { codigo: formData.pessoa.codigo }),
+        tipo: 'FISICA',
+        nome1: formData.pessoa.nome1,
+        nome2: formData.pessoa.nome2 || '',
+        doc1: formData.pessoa.doc1,
+        doc2: formData.pessoa.doc2 || '',
+        dtNsc: formData.pessoa.dtNsc || null,
+        situacao: formData.pessoa.situacao,
+        enderecos: formData.enderecos,
+        contatos: formData.contatos
+      },
+      vldExameMedico: formData.vldExameMedico || null,
+      vldAvaliacao: formData.vldAvaliacao || null,
+      objetivo: formData.objetivo || '',
+      profissao: formData.profissao || '',
+      empresa: formData.empresa || '',
+      responsavel: formData.responsavel || null,
+      horarios: formData.horarios || [],
+      controleAcesso: formData.controleAcesso.senha ? {
+        senha: formData.controleAcesso.senha,
+        impressaoDigital1: formData.controleAcesso.impressaoDigital1 || '',
+        impressaoDigital2: formData.controleAcesso.impressaoDigital2 || ''
+      } : undefined
+    };
+
+    onSalvar(dadosParaSalvar);
   };
-  
-  console.log('📤 Enviando para backend:', JSON.stringify(dadosParaSalvar, null, 2));
-  onSalvar(dadosParaSalvar);
-};
 
   const handleChange = (campo, valor) => {
     setFormData(prev => ({ ...prev, [campo]: valor }));
@@ -122,17 +113,17 @@ const handleSubmit = (e) => {
   };
 
   // ENDEREÇOS
-const adicionarEndereco = () => {
-  setFormData(prev => ({
-    ...prev,
-    enderecos: [...prev.enderecos, {
-      logradouro: '',
-      cep: '',
-      cidade: '',
-      uf: ''  // Mudou de 'estado' para 'uf' (conforme schema)
-    }]
-  }));
-};
+  const adicionarEndereco = () => {
+    setFormData(prev => ({
+      ...prev,
+      enderecos: [...prev.enderecos, {
+        logradouro: '',
+        cep: '',
+        cidade: '',
+        uf: ''  // Mudou de 'estado' para 'uf' (conforme schema)
+      }]
+    }));
+  };
 
   const removerEndereco = (index) => {
     setFormData(prev => ({
@@ -144,24 +135,24 @@ const adicionarEndereco = () => {
   const handleEnderecoChange = (index, campo, valor) => {
     setFormData(prev => ({
       ...prev,
-      enderecos: prev.enderecos.map((end, i) => 
+      enderecos: prev.enderecos.map((end, i) =>
         i === index ? { ...end, [campo]: valor } : end
       )
     }));
   };
 
   // CONTATOS
-// CONTATOS - Ajustar enum (linha ~83)
-const adicionarContato = () => {
-  setFormData(prev => ({
-    ...prev,
-    contatos: [...prev.contatos, {
-      tipo: 'CELULAR',  // Usar enum: EMAIL, TELEFONE_FIXO, CELULAR
-      valor: ''
-      // Remover: observacao, principal
-    }]
-  }));
-};
+  // CONTATOS - Ajustar enum (linha ~83)
+  const adicionarContato = () => {
+    setFormData(prev => ({
+      ...prev,
+      contatos: [...prev.contatos, {
+        tipo: 'CELULAR',  // Usar enum: EMAIL, TELEFONE_FIXO, CELULAR
+        valor: ''
+        // Remover: observacao, principal
+      }]
+    }));
+  };
 
   const removerContato = (index) => {
     setFormData(prev => ({
@@ -173,7 +164,7 @@ const adicionarContato = () => {
   const handleContatoChange = (index, campo, valor) => {
     setFormData(prev => ({
       ...prev,
-      contatos: prev.contatos.map((cont, i) => 
+      contatos: prev.contatos.map((cont, i) =>
         i === index ? { ...cont, [campo]: valor } : cont
       )
     }));
@@ -202,37 +193,37 @@ const adicionarContato = () => {
   const handleHorarioChange = (index, campo, valor) => {
     setFormData(prev => ({
       ...prev,
-      horarios: prev.horarios.map((h, i) => 
+      horarios: prev.horarios.map((h, i) =>
         i === index ? { ...h, [campo]: valor } : h
       )
     }));
   };
 
-const toggleDiaSemana = (index, diaValue) => {
-  setFormData(prev => ({
-    ...prev,
-    horarios: prev.horarios.map((h, i) => {
-      if (i !== index) return h;
-      const dias = h.diasSemana || [];
-      return {
-        ...h,
-        diasSemana: dias.includes(diaValue) 
-          ? dias.filter(d => d !== diaValue)
-          : [...dias, diaValue]
-      };
-    })
-  }));
-};
+  const toggleDiaSemana = (index, diaValue) => {
+    setFormData(prev => ({
+      ...prev,
+      horarios: prev.horarios.map((h, i) => {
+        if (i !== index) return h;
+        const dias = h.diasSemana || [];
+        return {
+          ...h,
+          diasSemana: dias.includes(diaValue)
+            ? dias.filter(d => d !== diaValue)
+            : [...dias, diaValue]
+        };
+      })
+    }));
+  };
 
   const diasSemana = [
-  { label: 'SEG', value: 'SEGUNDA' },
-  { label: 'TER', value: 'TERCA' },
-  { label: 'QUA', value: 'QUARTA' },
-  { label: 'QUI', value: 'QUINTA' },
-  { label: 'SEX', value: 'SEXTA' },
-  { label: 'SAB', value: 'SABADO' },
-  { label: 'DOM', value: 'DOMINGO' }
-];
+    { label: 'SEG', value: 'SEGUNDA' },
+    { label: 'TER', value: 'TERCA' },
+    { label: 'QUA', value: 'QUARTA' },
+    { label: 'QUI', value: 'QUINTA' },
+    { label: 'SEX', value: 'SEXTA' },
+    { label: 'SAB', value: 'SABADO' },
+    { label: 'DOM', value: 'DOMINGO' }
+  ];
 
 
   const abas = [
@@ -262,13 +253,12 @@ const toggleDiaSemana = (index, diaValue) => {
           <div className="border-b px-6 bg-gray-50 overflow-x-auto">
             <div className="flex gap-2">
               {abas.map(aba => (
-                <button key={aba.id} type="button" 
+                <button key={aba.id} type="button"
                   onClick={() => setAbaSelecionada(aba.id)}
-                  className={`px-4 py-3 font-medium border-b-2 whitespace-nowrap transition-colors ${
-                    abaSelecionada === aba.id 
-                      ? 'border-blue-600 text-blue-600 bg-white' 
-                      : 'border-transparent text-gray-600 hover:text-gray-800'
-                  }`}>
+                  className={`px-4 py-3 font-medium border-b-2 whitespace-nowrap transition-colors ${abaSelecionada === aba.id
+                    ? 'border-blue-600 text-blue-600 bg-white'
+                    : 'border-transparent text-gray-600 hover:text-gray-800'
+                    }`}>
                   {aba.icon} {aba.label}
                 </button>
               ))}
@@ -304,164 +294,164 @@ const toggleDiaSemana = (index, diaValue) => {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="000.000.000-00" />
                   </div>
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">RG</label>
-  <input 
-    type="text" 
-    value={formData.pessoa.doc2 || ''}  // ✅ Deve estar assim
-    onChange={(e) => handlePessoaChange('doc2', e.target.value)}  // ✅ Deve estar assim
-    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-    placeholder="00.000.000-0" 
-  />
-</div>
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento</label>
-  <input 
-    type="date" 
-    value={formData.pessoa.dtNsc || ''}  // ✅ Corrigido
-    onChange={(e) => handlePessoaChange('dtNsc', e.target.value)}  // ✅ Corrigido
-    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
-  />
-</div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">RG</label>
+                    <input
+                      type="text"
+                      value={formData.pessoa.doc2 || ''}  // ✅ Deve estar assim
+                      onChange={(e) => handlePessoaChange('doc2', e.target.value)}  // ✅ Deve estar assim
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="00.000.000-0"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento</label>
+                    <input
+                      type="date"
+                      value={formData.pessoa.dtNsc || ''}  // ✅ Corrigido
+                      onChange={(e) => handlePessoaChange('dtNsc', e.target.value)}  // ✅ Corrigido
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
 
                 </div>
               </div>
             )}
 
             {/* ABA: ENDEREÇOS */}
-{abaSelecionada === 'enderecos' && (
-  <div>
-    <div className="flex justify-between items-center mb-4">
-      <h5 className="font-semibold text-gray-800 flex items-center gap-2">
-        <MapPin size={20} className="text-blue-600" />
-        Endereços Cadastrados
-      </h5>
-      <button type="button" onClick={adicionarEndereco}
-        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2">
-        <Plus size={18} />
-        Adicionar Endereço
-      </button>
-    </div>
+            {abaSelecionada === 'enderecos' && (
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h5 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <MapPin size={20} className="text-blue-600" />
+                    Endereços Cadastrados
+                  </h5>
+                  <button type="button" onClick={adicionarEndereco}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2">
+                    <Plus size={18} />
+                    Adicionar Endereço
+                  </button>
+                </div>
 
-    <div className="space-y-4">
-      {formData.enderecos.map((endereco, index) => (
-        <div key={index} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
-          <div className="flex justify-between items-start mb-3">
-            <h6 className="font-medium text-gray-800">📍 Endereço {index + 1}</h6>
-            <button type="button" onClick={() => removerEndereco(index)}
-              className="text-red-600 hover:bg-red-100 p-1 rounded">
-              <Trash2 size={18} />
-            </button>
-          </div>
+                <div className="space-y-4">
+                  {formData.enderecos.map((endereco, index) => (
+                    <div key={index} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                      <div className="flex justify-between items-start mb-3">
+                        <h6 className="font-medium text-gray-800">📍 Endereço {index + 1}</h6>
+                        <button type="button" onClick={() => removerEndereco(index)}
+                          className="text-red-600 hover:bg-red-100 p-1 rounded">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">CEP</label>
-              <input type="text" value={endereco.cep || ''}
-                onChange={(e) => handleEnderecoChange(index, 'cep', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="00000-000" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Logradouro</label>
-              <input type="text" value={endereco.logradouro || ''}
-                onChange={(e) => handleEnderecoChange(index, 'logradouro', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Rua, Avenida..." />
-            </div>
-          </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">CEP</label>
+                          <input type="text" value={endereco.cep || ''}
+                            onChange={(e) => handleEnderecoChange(index, 'cep', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="00000-000" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Logradouro</label>
+                          <input type="text" value={endereco.logradouro || ''}
+                            onChange={(e) => handleEnderecoChange(index, 'logradouro', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="Rua, Avenida..." />
+                        </div>
+                      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
-              <input type="text" value={endereco.cidade || ''}
-                onChange={(e) => handleEnderecoChange(index, 'cidade', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="Cidade" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">UF</label>
-              <input type="text" value={endereco.uf || ''}
-                onChange={(e) => handleEnderecoChange(index, 'uf', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="SP" maxLength="2" />
-            </div>
-          </div>
-        </div>
-      ))}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+                          <input type="text" value={endereco.cidade || ''}
+                            onChange={(e) => handleEnderecoChange(index, 'cidade', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="Cidade" />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">UF</label>
+                          <input type="text" value={endereco.uf || ''}
+                            onChange={(e) => handleEnderecoChange(index, 'uf', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="SP" maxLength="2" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
 
-      {formData.enderecos.length === 0 && (
-        <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
-          <MapPin size={48} className="mx-auto mb-3 text-gray-400" />
-          <p className="font-medium">Nenhum endereço cadastrado</p>
-        </div>
-      )}
-    </div>
-  </div>
-)}
+                  {formData.enderecos.length === 0 && (
+                    <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+                      <MapPin size={48} className="mx-auto mb-3 text-gray-400" />
+                      <p className="font-medium">Nenhum endereço cadastrado</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
 
             {/* ABA: CONTATOS */}
-{abaSelecionada === 'contatos' && (
-  <div>
-    <div className="flex justify-between items-center mb-4">
-      <h5 className="font-semibold text-gray-800 flex items-center gap-2">
-        <Phone size={20} className="text-blue-600" />
-        Contatos Cadastrados
-      </h5>
-      <button type="button" onClick={adicionarContato}
-        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2">
-        <Plus size={18} />
-        Adicionar Contato
-      </button>
-    </div>
+            {abaSelecionada === 'contatos' && (
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h5 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <Phone size={20} className="text-blue-600" />
+                    Contatos Cadastrados
+                  </h5>
+                  <button type="button" onClick={adicionarContato}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm flex items-center gap-2">
+                    <Plus size={18} />
+                    Adicionar Contato
+                  </button>
+                </div>
 
-    <div className="space-y-4">
-      {formData.contatos.map((contato, index) => (
-        <div key={index} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
-          <div className="flex justify-between items-start mb-3">
-            <h6 className="font-medium text-gray-800">📞 Contato {index + 1}</h6>
-            <button type="button" onClick={() => removerContato(index)}
-              className="text-red-600 hover:bg-red-100 p-1 rounded">
-              <Trash2 size={18} />
-            </button>
-          </div>
+                <div className="space-y-4">
+                  {formData.contatos.map((contato, index) => (
+                    <div key={index} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                      <div className="flex justify-between items-start mb-3">
+                        <h6 className="font-medium text-gray-800">📞 Contato {index + 1}</h6>
+                        <button type="button" onClick={() => removerContato(index)}
+                          className="text-red-600 hover:bg-red-100 p-1 rounded">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-              <select value={contato.tipo || 'CELULAR'}
-                onChange={(e) => handleContatoChange(index, 'tipo', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                <option value="CELULAR">Celular</option>
-                <option value="TELEFONE_FIXO">Telefone Fixo</option>
-                <option value="EMAIL">E-mail</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {contato.tipo === 'EMAIL' ? 'E-mail' : 'Número'}
-              </label>
-              <input 
-                type={contato.tipo === 'EMAIL' ? 'email' : 'text'}
-                value={contato.valor || ''}
-                onChange={(e) => handleContatoChange(index, 'valor', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder={contato.tipo === 'EMAIL' ? 'email@exemplo.com' : '(00) 00000-0000'} />
-            </div>
-          </div>
-        </div>
-      ))}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                          <select value={contato.tipo || 'CELULAR'}
+                            onChange={(e) => handleContatoChange(index, 'tipo', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="CELULAR">Celular</option>
+                            <option value="TELEFONE_FIXO">Telefone Fixo</option>
+                            <option value="EMAIL">E-mail</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            {contato.tipo === 'EMAIL' ? 'E-mail' : 'Número'}
+                          </label>
+                          <input
+                            type={contato.tipo === 'EMAIL' ? 'email' : 'text'}
+                            value={contato.valor || ''}
+                            onChange={(e) => handleContatoChange(index, 'valor', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder={contato.tipo === 'EMAIL' ? 'email@exemplo.com' : '(00) 00000-0000'} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
 
-      {formData.contatos.length === 0 && (
-        <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
-          <Phone size={48} className="mx-auto mb-3 text-gray-400" />
-          <p className="font-medium">Nenhum contato cadastrado</p>
-        </div>
-      )}
-    </div>
-  </div>
-)}
+                  {formData.contatos.length === 0 && (
+                    <div className="text-center py-12 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+                      <Phone size={48} className="mx-auto mb-3 text-gray-400" />
+                      <p className="font-medium">Nenhum contato cadastrado</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* ABA: DADOS ADICIONAIS */}
             {abaSelecionada === 'adicionais' && (
@@ -548,22 +538,21 @@ const toggleDiaSemana = (index, diaValue) => {
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
                         </div>
                       </div>
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">Dias da Semana</label>
-  <div className="flex flex-wrap gap-2">
-    {diasSemana.map(dia => (
-      <button key={dia.value} type="button"
-        onClick={() => toggleDiaSemana(index, dia.value)}
-        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-          horario.diasSemana?.includes(dia.value)
-            ? 'bg-blue-600 text-white shadow-md'
-            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-        }`}>
-        {dia.label}
-      </button>
-    ))}
-  </div>
-</div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Dias da Semana</label>
+                        <div className="flex flex-wrap gap-2">
+                          {diasSemana.map(dia => (
+                            <button key={dia.value} type="button"
+                              onClick={() => toggleDiaSemana(index, dia.value)}
+                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${horario.diasSemana?.includes(dia.value)
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                }`}>
+                              {dia.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   ))}
                   {formData.horarios.length === 0 && (
@@ -585,26 +574,26 @@ const toggleDiaSemana = (index, diaValue) => {
                 </div>
 
                 <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Senha de Acesso {aluno ? '' : '*'}
-  </label>
-  <input 
-    type="password" 
-    required={!aluno}
-    value={formData.controleAcesso.senha}
-    onChange={(e) => setFormData(prev => ({
-      ...prev,
-      controleAcesso: { ...prev.controleAcesso, senha: e.target.value }
-    }))}
-    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-    placeholder={aluno ? "Deixe em branco para manter a atual" : "Digite a senha (mínimo 4 dígitos)"}
-    minLength="4" />
-  <p className="text-xs text-gray-500 mt-1">
-    {aluno 
-      ? "Preencha apenas se desejar alterar a senha" 
-      : "Senha numérica para catraca/controle de acesso"}
-  </p>
-</div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Senha de Acesso {aluno ? '' : '*'}
+                  </label>
+                  <input
+                    type="password"
+                    required={!aluno}
+                    value={formData.controleAcesso.senha}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      controleAcesso: { ...prev.controleAcesso, senha: e.target.value }
+                    }))}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder={aluno ? "Deixe em branco para manter a atual" : "Digite a senha (mínimo 4 dígitos)"}
+                    minLength="4" />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {aluno
+                      ? "Preencha apenas se desejar alterar a senha"
+                      : "Senha numérica para catraca/controle de acesso"}
+                  </p>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
