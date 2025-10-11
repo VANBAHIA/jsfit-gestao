@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, UserCheck, Search } from 'lucide-react';
 import { funcionariosService } from '../../../../services/api/funcionariosService';
+import FuncionarioForm from '../../../Controle/Funcionarios/FuncionarioForm';
 
 function InstrutoresTab({ instrutores, onChange }) {
   const [funcionarios, setFuncionarios] = useState([]);
   const [loadingFuncionarios, setLoadingFuncionarios] = useState(true);
   const [busca, setBusca] = useState('');
   const [mostrarLista, setMostrarLista] = useState(false);
+  const [mostrarFormFuncionario, setMostrarFormFuncionario] = useState(false);
 
   useEffect(() => {
     carregarFuncionarios();
@@ -15,8 +17,8 @@ function InstrutoresTab({ instrutores, onChange }) {
   const carregarFuncionarios = async () => {
     try {
       const resposta = await funcionariosService.listarTodos({ situacao: 'ATIVO' });
-      const funcData = resposta.data?.data || resposta.data || {};
-      const funcArray = funcData.funcionarios || [];
+      // ✅ CORRIGIDO: Estrutura correta da resposta
+      const funcArray = resposta.data?.data || resposta.data || [];
       setFuncionarios(funcArray);
     } catch (error) {
       console.error('Erro ao carregar funcionários:', error);
@@ -71,44 +73,57 @@ function InstrutoresTab({ instrutores, onChange }) {
         </div>
       </div>
 
-      {/* Campo de Busca */}
-      <div className="relative">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            placeholder="Buscar funcionário por nome ou matrícula..."
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            onFocus={() => setMostrarLista(true)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            disabled={loadingFuncionarios}
-          />
+      {/* Campo de Busca com Botão Novo Funcionário */}
+      <div className="flex gap-3">
+        <div className="flex-1 relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="text"
+              placeholder="Buscar funcionário por nome ou matrícula..."
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              onFocus={() => setMostrarLista(true)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              disabled={loadingFuncionarios}
+            />
+          </div>
+
+          {/* Lista de Sugestões */}
+          {mostrarLista && busca && funcionariosDisponiveis.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {funcionariosDisponiveis.map(func => (
+                <button
+                  key={func.id}
+                  type="button"
+                  onClick={() => adicionarInstrutor(func)}
+                  className="w-full px-4 py-3 hover:bg-gray-50 text-left transition-colors flex items-center justify-between"
+                >
+                  <div>
+                    <div className="font-medium text-gray-900">
+                      {func.pessoa?.nome1 || 'Nome não disponível'}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Matrícula: {func.matricula} | {func.funcao?.funcao || 'Sem função'}
+                    </div>
+                  </div>
+                  <Plus size={18} className="text-blue-600" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Lista de Sugestões */}
-        {mostrarLista && busca && funcionariosDisponiveis.length > 0 && (
-          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-            {funcionariosDisponiveis.map(func => (
-              <button
-                key={func.id}
-                type="button"
-                onClick={() => adicionarInstrutor(func)}
-                className="w-full px-4 py-3 hover:bg-gray-50 text-left transition-colors flex items-center justify-between"
-              >
-                <div>
-                  <div className="font-medium text-gray-900">
-                    {func.pessoa?.nome1 || 'Nome não disponível'}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Matrícula: {func.matricula} | {func.funcao?.funcao || 'Sem função'}
-                  </div>
-                </div>
-                <Plus size={18} className="text-blue-600" />
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Botão Novo Funcionário */}
+        <button
+          type="button"
+          onClick={() => setMostrarFormFuncionario(true)}
+          className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 whitespace-nowrap shadow-md transition-colors"
+          title="Cadastrar novo funcionário"
+        >
+          <Plus size={18} />
+          Novo Funcionário
+        </button>
       </div>
 
       {/* Lista de Instrutores Adicionados */}
@@ -171,6 +186,24 @@ function InstrutoresTab({ instrutores, onChange }) {
           </div>
         </div>
       </div>
+
+      {/* Modal Novo Funcionário */}
+      {mostrarFormFuncionario && (
+        <FuncionarioForm
+          funcionario={null}
+          onSalvar={async (dados) => {
+            try {
+              await funcionariosService.criar(dados);
+              setMostrarFormFuncionario(false);
+              await carregarFuncionarios(); // Recarrega lista
+              alert('Funcionário cadastrado com sucesso!');
+            } catch (error) {
+              alert('Erro ao cadastrar funcionário: ' + error.message);
+            }
+          }}
+          onCancelar={() => setMostrarFormFuncionario(false)}
+        />
+      )}
     </div>
   );
 }

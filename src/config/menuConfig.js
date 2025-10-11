@@ -14,7 +14,8 @@ import {
   Building2,
   Briefcase,
   MapPin,
-  FolderOpen
+  FolderOpen,
+  Percent
 } from 'lucide-react';
 
 /**
@@ -46,7 +47,7 @@ export const menuConfig = [
       {
         id: 'turmas',
         label: 'Turmas',
-        icon: Users,  // Importar: import { Users } from 'lucide-react';
+        icon: Users,
         descricao: 'Cadastro e gestão de turmas'
       },
       {
@@ -62,7 +63,7 @@ export const menuConfig = [
         id: 'cadastros-auxiliares',
         label: 'Cadastros Auxiliares',
         icon: FolderOpen,
-        hasSubmenus: true, // Indica que tem sub-submenus
+        hasSubmenus: true,
         submenus: [
           {
             id: 'locais',
@@ -70,20 +71,27 @@ export const menuConfig = [
             icon: MapPin,
             rota: '/cadastros/locais',
             descricao: 'Cadastro de locais e espaços da academia'
-          }, {
+          },
+          {
             id: 'funcoes',
             label: 'Funções',
             icon: Briefcase,
             rota: '/cadastros/funcoes',
             descricao: 'Cadastro de funções e cargos'
           },
-
           {
             id: 'planos',
             label: 'Planos',
             icon: FileText,
             rota: '/cadastros/planos',
             descricao: 'Cadastro de planos e modalidades'
+          },
+          {
+            id: 'descontos',
+            label: 'Descontos',
+            icon: Percent,
+            rota: '/cadastros/descontos',
+            descricao: 'Cadastro de descontos e promoções'
           },
           {
             id: 'modalidades',

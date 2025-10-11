@@ -9,8 +9,7 @@ import Funcoes from './pages/Cadastros/Funcoes/Funcoes';
 import Locais from './pages/Cadastros/Locais/Locais';
 import Planos from './pages/Cadastros/Planos/Planos';
 import Turmas from './pages/Cadastros/Turmas/Turmas';
-
-
+import Descontos from './pages/Cadastros/Descontos/Descontos';
 
 function App() {
   const [openMenus, setOpenMenus] = useState({});
@@ -65,6 +64,9 @@ function App() {
     }
     if (tab.submenuId === 'turmas') {
       return <Turmas />;
+    }
+    if (tab.submenuId === 'descontos') {
+      return <Descontos />;
     }
 
     // Conteúdo padrão para módulos não implementados
