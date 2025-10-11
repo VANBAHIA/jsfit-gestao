@@ -18,10 +18,15 @@ function FuncionarioForm({ funcionario, onSalvar, onCancelar }) {
         enderecos: [],
         contatos: [],
         funcaoId: '',
-        dataAdmissao: '', // ✅ CORRIGIDO de dtAdmissao
+        dataAdmissao: '',
         dataDemissao: '',
         salario: '',
-        situacao: 'ATIVO'
+        situacao: 'ATIVO',
+        controleAcesso: {  // ✅ ADICIONE ESTE OBJETO
+            senha: '',
+            impressaoDigital1: '',
+            impressaoDigital2: ''
+        }
     });
 
     // ✅ CARREGAR FUNÇÕES DA API
@@ -77,32 +82,38 @@ function FuncionarioForm({ funcionario, onSalvar, onCancelar }) {
     }, [funcionario]);
 
 const handleSubmit = (e) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        const dadosParaSalvar = {
-            pessoa: {
-                ...(formData.pessoa.codigo && { codigo: formData.pessoa.codigo }),
-                tipo: 'FISICA',
-                nome1: formData.pessoa.nome1,
-                nome2: formData.pessoa.nome2 || '',
-                doc1: formData.pessoa.doc1,
-                doc2: formData.pessoa.doc2 || '',
-                dtNsc: formData.pessoa.dtNsc || null,
-                situacao: formData.pessoa.situacao,
-                enderecos: formData.enderecos,
-                contatos: formData.contatos
-            },
-            funcionario: { // ✅ ENVOLVER EM "funcionario"
-                funcaoId: formData.funcaoId, // ✅ NÃO usar parseInt (MongoDB usa string)
-                dataAdmissao: formData.dataAdmissao, // ✅ CORRIGIDO
-                dataDemissao: formData.dataDemissao || null,
-                salario: formData.salario ? parseFloat(formData.salario) : null,
-                situacao: formData.situacao
-            }
-        };
+    // ✅ ADICIONE ESTES LOGS
+    console.log('🔍 formData completo:', formData);
+    console.log('🎯 funcaoId selecionado:', formData.funcaoId);
 
-        onSalvar(dadosParaSalvar);
+    const dadosParaSalvar = {
+        pessoa: {
+            ...(formData.pessoa.codigo && { codigo: formData.pessoa.codigo }),
+            tipo: 'FISICA',
+            nome1: formData.pessoa.nome1,
+            nome2: formData.pessoa.nome2 || '',
+            doc1: formData.pessoa.doc1,
+            doc2: formData.pessoa.doc2 || '',
+            dtNsc: formData.pessoa.dtNsc || null,
+            situacao: formData.pessoa.situacao,
+            enderecos: formData.enderecos,
+            contatos: formData.contatos
+        },
+        funcaoId: formData.funcaoId,
+        dataAdmissao: formData.dataAdmissao,
+        dataDemissao: formData.dataDemissao || null,
+        salario: formData.salario ? parseFloat(formData.salario) : null,
+        situacao: formData.situacao,
+        controleAcesso: formData.controleAcesso?.senha ? formData.controleAcesso : undefined
     };
+
+    // ✅ ADICIONE ESTE LOG
+    console.log('📤 Dados que serão enviados:', dadosParaSalvar);
+
+    onSalvar(dadosParaSalvar);
+};
 
     const handleChange = (campo, valor) => {
         setFormData(prev => ({ ...prev, [campo]: valor }));
@@ -275,31 +286,31 @@ const handleSubmit = (e) => {
 
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">Função *</label>
-    <select required value={formData.funcaoId}
-        onChange={(e) => handleChange('funcaoId', e.target.value)}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-        <option value="">Selecione a função</option>
-        {funcoes.map(funcao => (
-            <option key={funcao.id} value={funcao.id}>
-                {funcao.funcao} {/* ✅ CORRIGIDO: era funcao.descricao */}
-            </option>
-        ))}
-    </select>
-    
-    {/* ✅ ADICIONAR FEEDBACK */}
-    {funcoes.length === 0 && (
-        <p className="text-xs text-amber-600 mt-1">
-            ⚠️ Nenhuma função cadastrada. Cadastre funções primeiro!
-        </p>
-    )}
-</div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Função *</label>
+                                            <select required value={formData.funcaoId}
+                                                onChange={(e) => handleChange('funcaoId', e.target.value)}
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                                <option value="">Selecione a função</option>
+                                                {funcoes.map(funcao => (
+                                                    <option key={funcao.id} value={funcao.id}>
+                                                        {funcao.funcao} {/* ✅ CORRIGIDO: era funcao.descricao */}
+                                                    </option>
+                                                ))}
+                                            </select>
+
+                                            {/* ✅ ADICIONAR FEEDBACK */}
+                                            {funcoes.length === 0 && (
+                                                <p className="text-xs text-amber-600 mt-1">
+                                                    ⚠️ Nenhuma função cadastrada. Cadastre funções primeiro!
+                                                </p>
+                                            )}
+                                        </div>
                                         <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">Data de Admissão *</label>
-    <input type="date" required value={formData.dataAdmissao} // ✅ CORRIGIDO
-        onChange={(e) => handleChange('dataAdmissao', e.target.value)} // ✅ CORRIGIDO
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
-</div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Data de Admissão *</label>
+                                            <input type="date" required value={formData.dataAdmissao} // ✅ CORRIGIDO
+                                                onChange={(e) => handleChange('dataAdmissao', e.target.value)} // ✅ CORRIGIDO
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                                        </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Salário (R$)</label>
                                             <input type="number" step="0.01" min="0" value={formData.salario}

@@ -11,12 +11,16 @@ import {
   BarChart3,
   Calendar,
   Settings,
-  Building2
+  Building2,
+  Briefcase,
+  MapPin,
+  FolderOpen
 } from 'lucide-react';
 
 /**
  * Configuração da estrutura de menus do sistema
  * Seguindo padrão de academias brasileiras
+ * Suporta 2 níveis: Menu > Submenu > Sub-submenu
  */
 export const menuConfig = [
   {
@@ -24,6 +28,7 @@ export const menuConfig = [
     label: 'Controle',
     icon: Users,
     submenus: [
+      // === PESSOAS ===
       {
         id: 'funcionarios',
         label: 'Funcionários',
@@ -44,34 +49,51 @@ export const menuConfig = [
         icon: GraduationCap,
         rota: '/controle/instrutores',
         descricao: 'Gestão de instrutores e personal trainers'
-      }
-    ]
-  },
-  {
-    id: 'cadastros',
-    label: 'Cadastros',
-    icon: FileText,
-    submenus: [
-      {
-        id: 'planos',
-        label: 'Planos',
-        icon: FileText,
-        rota: '/cadastros/planos',
-        descricao: 'Cadastro de planos e modalidades'
       },
+      
+      // === CADASTROS AUXILIARES (SEGUNDO NÍVEL) ===
       {
-        id: 'modalidades',
-        label: 'Modalidades',
-        icon: Dumbbell,
-        rota: '/cadastros/modalidades',
-        descricao: 'Tipos de atividades oferecidas'
-      },
-      {
-        id: 'equipamentos',
-        label: 'Equipamentos',
-        icon: Wrench,
-        rota: '/cadastros/equipamentos',
-        descricao: 'Controle de equipamentos da academia'
+        id: 'cadastros-auxiliares',
+        label: 'Cadastros Auxiliares',
+        icon: FolderOpen,
+        hasSubmenus: true, // Indica que tem sub-submenus
+        submenus: [
+          {
+            id: 'locais',
+            label: 'Empresas - Locais',
+            icon: MapPin,
+            rota: '/cadastros/locais',
+            descricao: 'Cadastro de locais e espaços da academia'
+          },          {
+            id: 'funcoes',
+            label: 'Funções',
+            icon: Briefcase,
+            rota: '/cadastros/funcoes',
+            descricao: 'Cadastro de funções e cargos'
+          },
+
+          {
+            id: 'planos',
+            label: 'Planos',
+            icon: FileText,
+            rota: '/cadastros/planos',
+            descricao: 'Cadastro de planos e modalidades'
+          },
+          {
+            id: 'modalidades',
+            label: 'Modalidades',
+            icon: Dumbbell,
+            rota: '/cadastros/modalidades',
+            descricao: 'Tipos de atividades oferecidas'
+          },
+          {
+            id: 'equipamentos',
+            label: 'Equipamentos',
+            icon: Wrench,
+            rota: '/cadastros/equipamentos',
+            descricao: 'Controle de equipamentos da academia'
+          }
+        ]
       }
     ]
   },

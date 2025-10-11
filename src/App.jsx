@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { X, ChevronDown, Clock } from 'lucide-react';
+import { X, ChevronDown, ChevronRight, Clock } from 'lucide-react';
 import { menuConfig } from './config/menuConfig';
 import { useClock } from './hooks/useClock';
 import { useTabs } from './hooks/useTabs';
 import Alunos from './pages/Controle/Alunos/Alunos';
 import Funcionarios from './pages/Controle/Funcionarios/Funcionarios';
+import Funcoes from './pages/Cadastros/Funcoes/Funcoes';
+import Locais from './pages/Cadastros/Locais/Locais';
 
 
 function App() {
   const [openMenus, setOpenMenus] = useState({});
+  const [openSubmenus, setOpenSubmenus] = useState({}); // Para segundo nível
   const { date, time, dayOfWeek } = useClock();
   const { activeTab, openTabs, openTab, closeTab, setActiveTab } = useTabs();
 
@@ -19,6 +22,17 @@ function App() {
     setOpenMenus(prev => ({
       ...prev,
       [menuId]: !prev[menuId]
+    }));
+  };
+
+  /**
+   * Alterna a visibilidade de um submenu (segundo nível)
+   */
+  const toggleSubmenu = (submenuId, event) => {
+    event.stopPropagation();
+    setOpenSubmenus(prev => ({
+      ...prev,
+      [submenuId]: !prev[submenuId]
     }));
   };
 
@@ -42,15 +56,21 @@ function App() {
   const renderTabContent = (tab) => {
     const IconComponent = tab.icon;
   
-  // Se for a aba de Alunos, renderiza o componente específico
-  if (tab.submenuId === 'alunos') {
-    return <Alunos />;
-  }
-  if (tab.submenuId === 'funcionarios') {
-  return <Funcionarios />;
-}
-
+    // Mapeamento de componentes por submenuId
+    if (tab.submenuId === 'alunos') {
+      return <Alunos />;
+    }
+    if (tab.submenuId === 'funcionarios') {
+      return <Funcionarios />;
+    }
+    if (tab.submenuId === 'funcoes') {
+      return <Funcoes />;
+    }
+    if (tab.submenuId === 'locais') {
+      return <Locais />;
+    }
     
+    // Conteúdo padrão para módulos não implementados
     return (
       <div className="p-6">
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -168,6 +188,48 @@ function App() {
                   <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[220px]">
                     {menu.submenus.map((submenu) => {
                       const SubmenuIcon = submenu.icon;
+                      
+                      // Se o submenu tem sub-submenus (segundo nível)
+                      if (submenu.hasSubmenus) {
+                        return (
+                          <div key={submenu.id} className="relative">
+                            <button
+                              onClick={(e) => toggleSubmenu(submenu.id, e)}
+                              className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 text-left text-gray-700 transition-colors"
+                            >
+                              <div className="flex items-center gap-3">
+                                <SubmenuIcon size={16} className="text-gray-500" />
+                                <span>{submenu.label}</span>
+                              </div>
+                              <ChevronRight 
+                                size={14} 
+                                className={`transition-transform ${openSubmenus[submenu.id] ? 'rotate-90' : ''}`}
+                              />
+                            </button>
+                            
+                            {/* Sub-submenu (segundo nível) */}
+                            {openSubmenus[submenu.id] && (
+                              <div className="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px]">
+                                {submenu.submenus.map((subSubmenu) => {
+                                  const SubSubmenuIcon = subSubmenu.icon;
+                                  return (
+                                    <button
+                                      key={subSubmenu.id}
+                                      onClick={() => handleSubmenuClick(menu, subSubmenu)}
+                                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-left text-gray-700 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                                    >
+                                      <SubSubmenuIcon size={14} className="text-gray-400" />
+                                      <span>{subSubmenu.label}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                      
+                      // Submenu normal (sem segundo nível)
                       return (
                         <button
                           key={submenu.id}
@@ -202,19 +264,19 @@ function App() {
                   }`}
                 >
                   <TabIcon size={16} />
-                    <span className="text-sm">{tab.label}</span>
-                      <span
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          closeTab(tab.id);
-                        }}
-                        className="ml-2 hover:bg-red-100 rounded p-1 transition-colors cursor-pointer"
-                        title="Fechar aba"
-                        role="button"
-                      >
-                        <X size={14} />
-                      </span>
-                    </button>
+                  <span className="text-sm">{tab.label}</span>
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeTab(tab.id);
+                    }}
+                    className="ml-2 hover:bg-red-100 rounded p-1 transition-colors cursor-pointer"
+                    title="Fechar aba"
+                    role="button"
+                  >
+                    <X size={14} />
+                  </span>
+                </button>
               );
             })}
           </div>
@@ -224,8 +286,8 @@ function App() {
       {/* Área de Conteúdo Principal */}
       <main className="flex-1 overflow-auto bg-gray-50">
         {activeTab && openTabs.length > 0 ? (
-            renderTabContent(openTabs.find(tab => tab.id === activeTab))
-          ) : (
+          renderTabContent(openTabs.find(tab => tab.id === activeTab))
+        ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center max-w-md">
               <div className="bg-blue-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">

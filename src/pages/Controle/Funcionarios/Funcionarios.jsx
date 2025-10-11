@@ -73,41 +73,32 @@ function Funcionarios() {
 
   const handleSalvarFuncionario = async (dados) => {
     try {
-      setSalvando(true);
+        setSalvando(true);
 
-      if (funcionarioSelecionado) {
-        await funcionariosService.atualizar(funcionarioSelecionado.id, {
-          pessoa: dados.pessoa,
-          funcionario: {
-            funcaoId: dados.funcaoId,
-            dtAdmissao: dados.dtAdmissao,
-            salario: dados.salario,
-            controleAcesso: dados.controleAcesso?.senha ? dados.controleAcesso : undefined
-          }
-        });
-      } else {
-        await funcionariosService.criar({
-          pessoa: dados.pessoa,
-          funcionario: {
-            funcaoId: dados.funcaoId,
-            dtAdmissao: dados.dtAdmissao,
-            salario: dados.salario,
-            controleAcesso: dados.controleAcesso
-          }
-        });
-      }
+        if (funcionarioSelecionado) {
+            await funcionariosService.atualizar(funcionarioSelecionado.id, {
+                pessoa: dados.pessoa,
+                funcaoId: dados.funcaoId,              // ✅ ADICIONE AQUI
+                dataAdmissao: dados.dataAdmissao,      // ✅ ADICIONE AQUI
+                salario: dados.salario,                // ✅ ADICIONE AQUI
+                situacao: dados.situacao,              // ✅ ADICIONE AQUI
+                controleAcesso: dados.controleAcesso?.senha ? dados.controleAcesso : undefined
+            });
+        } else {
+            // ✅ PARA CRIAR, ENVIE OS DADOS COMPLETOS
+            await funcionariosService.criar(dados);
+        }
 
-      setMostrarForm(false);
-      setFuncionarioSelecionado(null);
-      await carregarDados();
+        setMostrarForm(false);
+        setFuncionarioSelecionado(null);
+        await carregarDados();
     } catch (error) {
-      console.error('❌ Erro:', error.response?.data || error.message);
-      alert('Erro ao salvar: ' + (error.response?.data?.message || error.message));
+        console.error('❌ Erro:', error.response?.data || error.message);
+        alert('Erro ao salvar: ' + (error.response?.data?.message || error.message));
     } finally {
-      setSalvando(false);
+        setSalvando(false);
     }
-  };
-
+};
   const handleConfirmarExclusao = (funcionario) => {
     setConfirmDelete({ isOpen: true, funcionario });
   };
