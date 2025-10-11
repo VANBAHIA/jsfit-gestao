@@ -47,47 +47,53 @@ function FuncionarioForm({ funcionario, onSalvar, onCancelar }) {
     }, []);
 
 
-    useEffect(() => {
-        if (funcionario) {
-            const formatarData = (data) => {
-                if (!data) return '';
-                return data.split('T')[0];
-            };
+useEffect(() => {
+    if (funcionario) {
+        const formatarData = (data) => {
+            if (!data) return '';
+            return data.split('T')[0];
+        };
 
-            const dadosFuncionario = funcionario.data || funcionario;
+        const dadosFuncionario = funcionario.data || funcionario;
 
-            console.log('🔍 Funcionário completo:', dadosFuncionario);
-            console.log('🎯 funcaoId encontrado:', dadosFuncionario.funcaoId);
+        console.log('🔍 Funcionário completo:', dadosFuncionario);
+        console.log('🎯 funcaoId encontrado:', dadosFuncionario.funcaoId);
 
-            setFormData({
-                pessoaId: dadosFuncionario.pessoaId || dadosFuncionario.pessoa?.id || '',
-                pessoa: {
-                    codigo: dadosFuncionario.pessoa?.codigo || '',
-                    nome1: dadosFuncionario.pessoa?.nome1 || '',
-                    nome2: dadosFuncionario.pessoa?.nome2 || '',
-                    doc1: dadosFuncionario.pessoa?.doc1 || '',
-                    doc2: dadosFuncionario.pessoa?.doc2 || '',
-                    dtNsc: formatarData(dadosFuncionario.pessoa?.dtNsc),
-                    situacao: dadosFuncionario.pessoa?.situacao || 'ATIVO'
-                },
-                enderecos: dadosFuncionario.pessoa?.enderecos || [],
-                contatos: dadosFuncionario.pessoa?.contatos || [],
-                funcaoId: dadosFuncionario.funcaoId || '', // ✅ CORRIGIDO
-                dataAdmissao: formatarData(dadosFuncionario.dataAdmissao), // ✅ CORRIGIDO
-                dataDemissao: formatarData(dadosFuncionario.dataDemissao),
-                salario: dadosFuncionario.salario?.toString() || '',
-                situacao: dadosFuncionario.situacao || 'ATIVO'
-            });
-        }
-    }, [funcionario]);
+        setFormData({
+            pessoaId: dadosFuncionario.pessoaId || dadosFuncionario.pessoa?.id || '',
+            pessoa: {
+                codigo: dadosFuncionario.pessoa?.codigo || '',
+                nome1: dadosFuncionario.pessoa?.nome1 || '',
+                nome2: dadosFuncionario.pessoa?.nome2 || '',
+                doc1: dadosFuncionario.pessoa?.doc1 || '',
+                doc2: dadosFuncionario.pessoa?.doc2 || '',
+                dtNsc: formatarData(dadosFuncionario.pessoa?.dtNsc),
+                situacao: dadosFuncionario.pessoa?.situacao || 'ATIVO'
+            },
+            enderecos: dadosFuncionario.pessoa?.enderecos || [],
+            contatos: dadosFuncionario.pessoa?.contatos || [],
+            funcaoId: dadosFuncionario.funcaoId || '',
+            dataAdmissao: formatarData(dadosFuncionario.dataAdmissao),
+            dataDemissao: formatarData(dadosFuncionario.dataDemissao),
+            salario: dadosFuncionario.salario?.toString() || '',
+            situacao: dadosFuncionario.situacao || 'ATIVO',
+            // ✅ CORRIGIDO: Garantir que controleAcesso sempre exista
+            controleAcesso: {
+                senha: dadosFuncionario.controleAcesso?.senha || '',
+                impressaoDigital1: dadosFuncionario.controleAcesso?.impressaoDigital1 || '',
+                impressaoDigital2: dadosFuncionario.controleAcesso?.impressaoDigital2 || ''
+            }
+        });
+    }
+}, [funcionario]);
 
 const handleSubmit = (e) => {
     e.preventDefault();
 
-    // ✅ ADICIONE ESTES LOGS
     console.log('🔍 formData completo:', formData);
     console.log('🎯 funcaoId selecionado:', formData.funcaoId);
 
+    // ✅ ESTRUTURA CORRIGIDA - Separar pessoa e funcionario
     const dadosParaSalvar = {
         pessoa: {
             ...(formData.pessoa.codigo && { codigo: formData.pessoa.codigo }),
@@ -101,15 +107,18 @@ const handleSubmit = (e) => {
             enderecos: formData.enderecos,
             contatos: formData.contatos
         },
-        funcaoId: formData.funcaoId,
-        dataAdmissao: formData.dataAdmissao,
-        dataDemissao: formData.dataDemissao || null,
-        salario: formData.salario ? parseFloat(formData.salario) : null,
-        situacao: formData.situacao,
-        controleAcesso: formData.controleAcesso?.senha ? formData.controleAcesso : undefined
+        funcionario: {  // ✅ AGRUPADO AQUI
+            funcaoId: formData.funcaoId,
+            dataAdmissao: formData.dataAdmissao,
+            dataDemissao: formData.dataDemissao || null,
+            salario: formData.salario ? parseFloat(formData.salario) : null,
+            situacao: formData.situacao,
+            ...(formData.controleAcesso?.senha && { 
+                controleAcesso: formData.controleAcesso 
+            })
+        }
     };
 
-    // ✅ ADICIONE ESTE LOG
     console.log('📤 Dados que serão enviados:', dadosParaSalvar);
 
     onSalvar(dadosParaSalvar);

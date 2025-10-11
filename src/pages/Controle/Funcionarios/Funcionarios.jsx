@@ -71,21 +71,27 @@ function Funcionarios() {
     }
   };
 
-  const handleSalvarFuncionario = async (dados) => {
+const handleSalvarFuncionario = async (dados) => {
     try {
         setSalvando(true);
 
         if (funcionarioSelecionado) {
+            // ✅ ATUALIZAÇÃO: Também precisa enviar no formato correto
             await funcionariosService.atualizar(funcionarioSelecionado.id, {
                 pessoa: dados.pessoa,
-                funcaoId: dados.funcaoId,              // ✅ ADICIONE AQUI
-                dataAdmissao: dados.dataAdmissao,      // ✅ ADICIONE AQUI
-                salario: dados.salario,                // ✅ ADICIONE AQUI
-                situacao: dados.situacao,              // ✅ ADICIONE AQUI
-                controleAcesso: dados.controleAcesso?.senha ? dados.controleAcesso : undefined
+                funcionario: {  // ✅ AGRUPADO AQUI
+                    funcaoId: dados.funcionario.funcaoId,
+                    dataAdmissao: dados.funcionario.dataAdmissao,
+                    dataDemissao: dados.funcionario.dataDemissao,
+                    salario: dados.funcionario.salario,
+                    situacao: dados.funcionario.situacao,
+                    ...(dados.funcionario.controleAcesso?.senha && {
+                        controleAcesso: dados.funcionario.controleAcesso
+                    })
+                }
             });
         } else {
-            // ✅ PARA CRIAR, ENVIE OS DADOS COMPLETOS
+            // ✅ CRIAÇÃO: Já vem no formato correto do form
             await funcionariosService.criar(dados);
         }
 
@@ -99,6 +105,7 @@ function Funcionarios() {
         setSalvando(false);
     }
 };
+  
   const handleConfirmarExclusao = (funcionario) => {
     setConfirmDelete({ isOpen: true, funcionario });
   };

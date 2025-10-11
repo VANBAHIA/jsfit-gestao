@@ -13,6 +13,7 @@ export const funcionariosService = {
 
   criar: async (dados) => {
     const response = await api.post('/funcionarios', dados);
+console.log(dados);
     return response.data;
   },
 

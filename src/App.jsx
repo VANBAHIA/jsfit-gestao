@@ -7,17 +7,17 @@ import Alunos from './pages/Controle/Alunos/Alunos';
 import Funcionarios from './pages/Controle/Funcionarios/Funcionarios';
 import Funcoes from './pages/Cadastros/Funcoes/Funcoes';
 import Locais from './pages/Cadastros/Locais/Locais';
+import Planos from './pages/Cadastros/Planos/Planos';
+import Turmas from './pages/Cadastros/Turmas/Turmas';
+
 
 
 function App() {
   const [openMenus, setOpenMenus] = useState({});
-  const [openSubmenus, setOpenSubmenus] = useState({}); // Para segundo nível
+  const [openSubmenus, setOpenSubmenus] = useState({});
   const { date, time, dayOfWeek } = useClock();
   const { activeTab, openTabs, openTab, closeTab, setActiveTab } = useTabs();
 
-  /**
-   * Alterna a visibilidade do dropdown de um menu
-   */
   const toggleMenu = (menuId) => {
     setOpenMenus(prev => ({
       ...prev,
@@ -25,9 +25,6 @@ function App() {
     }));
   };
 
-  /**
-   * Alterna a visibilidade de um submenu (segundo nível)
-   */
   const toggleSubmenu = (submenuId, event) => {
     event.stopPropagation();
     setOpenSubmenus(prev => ({
@@ -36,9 +33,6 @@ function App() {
     }));
   };
 
-  /**
-   * Abre uma nova aba ao clicar em um submenu
-   */
   const handleSubmenuClick = (menu, submenu) => {
     openTab({
       menuId: menu.id,
@@ -50,12 +44,9 @@ function App() {
     toggleMenu(menu.id);
   };
 
-  /**
-   * Renderiza o conteúdo de uma aba
-   */
   const renderTabContent = (tab) => {
     const IconComponent = tab.icon;
-  
+
     // Mapeamento de componentes por submenuId
     if (tab.submenuId === 'alunos') {
       return <Alunos />;
@@ -69,7 +60,13 @@ function App() {
     if (tab.submenuId === 'locais') {
       return <Locais />;
     }
-    
+    if (tab.submenuId === 'planos') {
+      return <Planos />;
+    }
+    if (tab.submenuId === 'turmas') {
+      return <Turmas />;
+    }
+
     // Conteúdo padrão para módulos não implementados
     return (
       <div className="p-6">
@@ -148,7 +145,7 @@ function App() {
               <p className="text-blue-100 text-sm">Sistema de Gestão para Academias</p>
             </div>
           </div>
-          
+
           {/* Relógio com Data e Hora */}
           <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg border border-white/20">
             <div className="flex items-center gap-3">
@@ -177,9 +174,9 @@ function App() {
                 >
                   <MenuIcon size={18} />
                   {menu.label}
-                  <ChevronDown 
-                    size={16} 
-                    className={`transition-transform ${openMenus[menu.id] ? 'rotate-180' : ''}`} 
+                  <ChevronDown
+                    size={16}
+                    className={`transition-transform ${openMenus[menu.id] ? 'rotate-180' : ''}`}
                   />
                 </button>
 
@@ -188,7 +185,7 @@ function App() {
                   <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[220px]">
                     {menu.submenus.map((submenu) => {
                       const SubmenuIcon = submenu.icon;
-                      
+
                       // Se o submenu tem sub-submenus (segundo nível)
                       if (submenu.hasSubmenus) {
                         return (
@@ -201,12 +198,12 @@ function App() {
                                 <SubmenuIcon size={16} className="text-gray-500" />
                                 <span>{submenu.label}</span>
                               </div>
-                              <ChevronRight 
-                                size={14} 
+                              <ChevronRight
+                                size={14}
                                 className={`transition-transform ${openSubmenus[submenu.id] ? 'rotate-90' : ''}`}
                               />
                             </button>
-                            
+
                             {/* Sub-submenu (segundo nível) */}
                             {openSubmenus[submenu.id] && (
                               <div className="absolute left-full top-0 ml-1 bg-white border border-gray-200 rounded-lg shadow-lg min-w-[200px]">
@@ -228,7 +225,7 @@ function App() {
                           </div>
                         );
                       }
-                      
+
                       // Submenu normal (sem segundo nível)
                       return (
                         <button
@@ -257,11 +254,10 @@ function App() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-200 transition-all whitespace-nowrap ${
-                    activeTab === tab.id
+                  className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-200 transition-all whitespace-nowrap ${activeTab === tab.id
                       ? 'bg-white text-blue-600 font-semibold border-t-2 border-t-blue-600 -mt-[2px]'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
+                    }`}
                 >
                   <TabIcon size={16} />
                   <span className="text-sm">{tab.label}</span>

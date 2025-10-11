@@ -44,13 +44,19 @@ export const menuConfig = [
         descricao: 'Cadastro e controle de alunos'
       },
       {
+        id: 'turmas',
+        label: 'Turmas',
+        icon: Users,  // Importar: import { Users } from 'lucide-react';
+        descricao: 'Cadastro e gestão de turmas'
+      },
+      {
         id: 'instrutores',
         label: 'Instrutores',
         icon: GraduationCap,
         rota: '/controle/instrutores',
         descricao: 'Gestão de instrutores e personal trainers'
       },
-      
+
       // === CADASTROS AUXILIARES (SEGUNDO NÍVEL) ===
       {
         id: 'cadastros-auxiliares',
@@ -64,7 +70,7 @@ export const menuConfig = [
             icon: MapPin,
             rota: '/cadastros/locais',
             descricao: 'Cadastro de locais e espaços da academia'
-          },          {
+          }, {
             id: 'funcoes',
             label: 'Funções',
             icon: Briefcase,
