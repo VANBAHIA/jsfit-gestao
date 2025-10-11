@@ -4,6 +4,8 @@ import { menuConfig } from './config/menuConfig';
 import { useClock } from './hooks/useClock';
 import { useTabs } from './hooks/useTabs';
 import Alunos from './pages/Controle/Alunos/Alunos';
+import Funcionarios from './pages/Controle/Funcionarios/Funcionarios';
+
 
 function App() {
   const [openMenus, setOpenMenus] = useState({});
@@ -44,6 +46,10 @@ function App() {
   if (tab.submenuId === 'alunos') {
     return <Alunos />;
   }
+  if (tab.submenuId === 'funcionarios') {
+  return <Funcionarios />;
+}
+
     
     return (
       <div className="p-6">

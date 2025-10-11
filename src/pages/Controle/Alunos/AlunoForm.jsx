@@ -29,44 +29,45 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
   });
 
   useEffect(() => {
-    if (aluno) {
-      console.log('🔍 Dados recebidos no form:', JSON.stringify(aluno, null, 2));
+  if (aluno) {
+    console.log('🔍 Aluno recebido no form:', JSON.stringify(aluno, null, 2));
 
-      const formatarData = (data) => {
-        if (!data) return '';
-        return data.split('T')[0];
-      };
+    const formatarData = (data) => {
+      if (!data) return '';
+      return data.split('T')[0];
+    };
 
-      setFormData({
-        pessoaId: aluno.pessoaId || aluno.pessoa?.id || '',
-        pessoa: {
-          codigo: aluno.pessoa?.codigo || '',
-          nome1: aluno.pessoa?.nome1 || '',
-          nome2: aluno.pessoa?.nome2 || '',
-          doc1: aluno.pessoa?.doc1 || '',
-          doc2: aluno.pessoa?.doc2 || '',
-          dtNsc: formatarData(aluno.pessoa?.dtNsc),
-          situacao: aluno.pessoa?.situacao || 'ATIVO'
-        },
-        enderecos: aluno.pessoa?.enderecos || [],
-        contatos: aluno.pessoa?.contatos || [],
-        vldExameMedico: formatarData(aluno.vldExameMedico),
-        vldAvaliacao: formatarData(aluno.vldAvaliacao),
-        objetivo: aluno.objetivo || '',
-        profissao: aluno.profissao || '',
-        empresa: aluno.empresa || '',
-        responsavel: aluno.responsavel || null,
-        horarios: aluno.horarios || [],
-        controleAcesso: {
-          senha: '',
-          impressaoDigital1: aluno.controleAcesso?.impressaoDigital1 || '',
-          impressaoDigital2: aluno.controleAcesso?.impressaoDigital2 || ''
-        }
-      });
+    setFormData({
+      pessoaId: aluno.pessoaId || aluno.pessoa?.id || '',
+      pessoa: {
+        codigo: aluno.pessoa?.codigo || '',
+        nome1: aluno.pessoa?.nome1 || '',
+        nome2: aluno.pessoa?.nome2 || '',
+        doc1: aluno.pessoa?.doc1 || '',
+        doc2: aluno.pessoa?.doc2 || '',
+        dtNsc: formatarData(aluno.pessoa?.dtNsc),
+        situacao: aluno.pessoa?.situacao || 'ATIVO'
+      },
+      enderecos: aluno.pessoa?.enderecos || [],
+      contatos: aluno.pessoa?.contatos || [],
+      vldExameMedico: formatarData(aluno.vldExameMedico),
+      vldAvaliacao: formatarData(aluno.vldAvaliacao),
+      objetivo: aluno.objetivo || '',
+      profissao: aluno.profissao || '',
+      empresa: aluno.empresa || '',
+      responsavel: aluno.responsavel || null,
+      horarios: aluno.horarios || [],
+      controleAcesso: {
+        senha: '', // ✅ Sempre vazio (não exibe hash)
+        senhaAtual: aluno.controleAcesso?.senha || '', // ✅ Guarda hash
+        impressaoDigital1: aluno.controleAcesso?.impressaoDigital1 || '',
+        impressaoDigital2: aluno.controleAcesso?.impressaoDigital2 || ''
+      }
+    });
 
-      console.log('✅ FormData preenchido'); // ← Confirmar
-    }
-  }, [aluno]);
+    console.log('✅ FormData preenchido');
+  }
+}, [aluno]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -91,11 +92,17 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
       empresa: formData.empresa || '',
       responsavel: formData.responsavel || null,
       horarios: formData.horarios || [],
-      controleAcesso: formData.controleAcesso.senha ? {
-        senha: formData.controleAcesso.senha,
-        impressaoDigital1: formData.controleAcesso.impressaoDigital1 || '',
-        impressaoDigital2: formData.controleAcesso.impressaoDigital2 || ''
-      } : undefined
+controleAcesso: {
+  // Se preencheu nova senha, envia. Senão, mantém a atual (se houver)
+  ...(formData.controleAcesso.senha 
+    ? { senha: formData.controleAcesso.senha } 
+    : formData.controleAcesso.senhaAtual 
+      ? { senha: formData.controleAcesso.senhaAtual } 
+      : {}
+  ),
+  impressaoDigital1: formData.controleAcesso.impressaoDigital1 || null,
+  impressaoDigital2: formData.controleAcesso.impressaoDigital2 || null
+}
     };
 
     onSalvar(dadosParaSalvar);
@@ -575,23 +582,31 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Senha de Acesso {aluno ? '' : '*'}
+                    {aluno ? 'Nova Senha (opcional)' : 'Senha de Acesso *'}
                   </label>
                   <input
                     type="password"
-                    required={!aluno}
+                    required={!aluno} // ✅ Obrigatório apenas no cadastro
                     value={formData.controleAcesso.senha}
                     onChange={(e) => setFormData(prev => ({
                       ...prev,
                       controleAcesso: { ...prev.controleAcesso, senha: e.target.value }
                     }))}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder={aluno ? "Deixe em branco para manter a atual" : "Digite a senha (mínimo 4 dígitos)"}
+                    placeholder={aluno ? "Deixe vazio para manter a senha atual" : "Digite a senha (mínimo 4 dígitos)"}
                     minLength="4" />
+
+                  {aluno && (
+                    <div className="mt-2 flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded">
+                      <span>✓</span>
+                      <span>Senha atual está protegida e será mantida se não preencher</span>
+                    </div>
+                  )}
+
                   <p className="text-xs text-gray-500 mt-1">
                     {aluno
-                      ? "Preencha apenas se desejar alterar a senha"
-                      : "Senha numérica para catraca/controle de acesso"}
+                      ? "⚠️ Preencha apenas se desejar alterar a senha existente"
+                      : "Senha numérica de 4+ dígitos para controle de acesso"}
                   </p>
                 </div>
 

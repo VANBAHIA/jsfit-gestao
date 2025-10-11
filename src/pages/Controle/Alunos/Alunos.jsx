@@ -19,39 +19,40 @@ function Alunos() {
     carregarAlunos();
   }, []);
 
-const carregarAlunos = async () => {
-  try {
-    setLoading(true);
-    const resposta = await alunosService.listarTodos();
-    console.log('📦 Resposta da API:', resposta); // ← DEBUG
-    
-    // ✅ Se a API retorna { data: { data: [...], pagination: {...} } }
-    setAlunos(resposta.data?.data || resposta.data || []);
-    
-    setErro(null);
-  } catch (error) {
-    setErro('Erro ao carregar alunos');
-    console.error('❌ Erro:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+  const carregarAlunos = async () => {
+    try {
+      setLoading(true);
+      const resposta = await alunosService.listarTodos();
+      console.log('📦 Resposta da API:', resposta); // ← DEBUG
+
+      // ✅ Se a API retorna { data: { data: [...], pagination: {...} } }
+      setAlunos(resposta.data?.data || resposta.data || []);
+
+      setErro(null);
+    } catch (error) {
+      setErro('Erro ao carregar alunos');
+      console.error('❌ Erro:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleNovoAluno = () => {
     setAlunoSelecionado(null);
     setMostrarForm(true);
   };
 
-const handleEditarAluno = async (aluno) => {
-  try {
-    const resposta = await alunosService.buscarPorId(aluno.id);
-    console.log('📥 Aluno completo:', resposta); // ← DEBUG
-    setAlunoSelecionado(resposta.data);
-    setMostrarForm(true);
-  } catch (error) {
-    alert('Erro ao carregar dados do aluno: ' + error.message);
-  }
-};
+  const handleEditarAluno = async (aluno) => {
+    try {
+      const resposta = await alunosService.buscarPorId(aluno.id);
+      console.log('📥 Aluno completo:', resposta);
+      setAlunoSelecionado(resposta.data.data); // ✅ CORRETO - acessa data.data
+      setMostrarForm(true);
+    } catch (error) {
+      alert('Erro ao carregar dados do aluno: ' + error.message);
+    }
+  };
+
 
 
   const handleSalvarAluno = async (dados) => {
@@ -154,7 +155,7 @@ const handleEditarAluno = async (aluno) => {
           <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">ID</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Matrícula</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Nome</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">CPF</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Situação</th>
@@ -164,7 +165,7 @@ const handleEditarAluno = async (aluno) => {
             <tbody className="divide-y divide-gray-200">
               {alunos.map((aluno) => (
                 <tr key={aluno.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm text-gray-900">{aluno.id}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{aluno.matricula}</td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">
                     {aluno.pessoa?.nome1 || 'Sem nome'}
                   </td>
@@ -173,8 +174,8 @@ const handleEditarAluno = async (aluno) => {
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full ${aluno.pessoa?.situacao === 'Ativo'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
                       }`}>
                       {aluno.pessoa?.situacao || 'N/A'}
                     </span>
