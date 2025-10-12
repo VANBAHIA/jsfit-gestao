@@ -164,7 +164,7 @@ function Matriculas() {
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Valor</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Data Início</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Vencimento</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Situação</th>
                 <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th>
               </tr>
             </thead>
@@ -202,18 +202,18 @@ function Matriculas() {
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                      matricula.status === 'ATIVA'
+                      matricula.situacao === 'ATIVA'
                         ? 'bg-green-100 text-green-800'
-                        : matricula.status === 'INATIVA'
+                        : matricula.situacao === 'INATIVA'
                         ? 'bg-red-100 text-red-800'
                         : 'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {matricula.status || 'N/A'}
+                      {matricula.situacao || 'N/A'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      {matricula.status === 'ATIVA' ? (
+                      {matricula.situacao === 'ATIVA' ? (
                         <button 
                           onClick={() => handleConfirmarAcao(matricula, 'inativar')}
                           className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg" 

@@ -57,6 +57,7 @@ export const menuConfig = [
         icon: Users,
         descricao: 'Cadastro e gestão de turmas'
       },
+
       {
         id: 'instrutores',
         label: 'Instrutores',
@@ -143,7 +144,14 @@ export const menuConfig = [
         icon: DollarSign,
         rota: '/financeiro/contas-receber',
         descricao: 'Receitas e recebimentos'
-      }
+      },
+      {
+      id: 'caixa',  // ✅ Adicionar este item
+      label: 'Controle de Caixa',
+      icon: CreditCard,
+      rota: '/financeiro/caixa',
+      descricao: 'Abertura, fechamento e movimentações'
+    }
     ]
   },
   {

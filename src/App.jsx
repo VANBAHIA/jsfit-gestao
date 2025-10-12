@@ -12,6 +12,10 @@ import Turmas from './pages/Cadastros/Turmas/Turmas';
 import Descontos from './pages/Cadastros/Descontos/Descontos';
 import Matriculas from './pages/Controle/Matriculas/Matriculas';
 
+import ContasReceber from './pages/Financeiro/ContasReceber/ContasReceber';
+import ContasPagar from './pages/Financeiro/ContasPagar/ContasPagar';
+import Caixa from './pages/Financeiro/Caixa/Caixa';
+
 function App() {
   const [openMenus, setOpenMenus] = useState({});
   const [openSubmenus, setOpenSubmenus] = useState({});
@@ -71,6 +75,15 @@ function App() {
     }
     if (tab.submenuId === 'matriculas') {
       return <Matriculas />;
+    }
+    if (tab.submenuId === 'contas-receber') {
+      return <ContasReceber />;
+    }
+    if (tab.submenuId === 'contas-pagar') {
+      return <ContasPagar />;
+    }
+    if (tab.submenuId === 'caixa') {
+      return <Caixa />;
     }
 
     // Conteúdo padrão para módulos não implementados
