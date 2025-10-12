@@ -45,6 +45,13 @@ export const menuConfig = [
         descricao: 'Cadastro e controle de alunos'
       },
       {
+        id: 'matriculas',
+        label: 'Matrículas',
+        icon: FileText,  // ← Já importado no topo
+        rota: '/controle/matriculas',
+        descricao: 'Gestão de matrículas de alunos'
+      },
+      {
         id: 'turmas',
         label: 'Turmas',
         icon: Users,

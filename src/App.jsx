@@ -10,6 +10,7 @@ import Locais from './pages/Cadastros/Locais/Locais';
 import Planos from './pages/Cadastros/Planos/Planos';
 import Turmas from './pages/Cadastros/Turmas/Turmas';
 import Descontos from './pages/Cadastros/Descontos/Descontos';
+import Matriculas from './pages/Controle/Matriculas/Matriculas';
 
 function App() {
   const [openMenus, setOpenMenus] = useState({});
@@ -67,6 +68,9 @@ function App() {
     }
     if (tab.submenuId === 'descontos') {
       return <Descontos />;
+    }
+    if (tab.submenuId === 'matriculas') {
+      return <Matriculas />;
     }
 
     // Conteúdo padrão para módulos não implementados
@@ -257,8 +261,8 @@ function App() {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-200 transition-all whitespace-nowrap ${activeTab === tab.id
-                      ? 'bg-white text-blue-600 font-semibold border-t-2 border-t-blue-600 -mt-[2px]'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-white text-blue-600 font-semibold border-t-2 border-t-blue-600 -mt-[2px]'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                 >
                   <TabIcon size={16} />

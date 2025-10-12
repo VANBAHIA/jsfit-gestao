@@ -28,7 +28,19 @@ function Step1Aluno({ alunoSelecionado, onSelecionarAluno }) {
 
   const handleSalvarNovoAluno = async (dados) => {
     try {
-      await alunosService.criar(dados);
+              await alunosService.criar({
+                pessoa: dados.pessoa,
+                aluno: {
+                  vldExameMedico: dados.vldExameMedico,
+                  vldAvaliacao: dados.vldAvaliacao,
+                  objetivo: dados.objetivo,
+                  profissao: dados.profissao,
+                  empresa: dados.empresa,
+                  responsavel: dados.responsavel,
+                  horarios: dados.horarios,
+                  controleAcesso: dados.controleAcesso
+                }
+              });
       await carregarAlunos();
       setMostrarFormNovoAluno(false);
     } catch (error) {
