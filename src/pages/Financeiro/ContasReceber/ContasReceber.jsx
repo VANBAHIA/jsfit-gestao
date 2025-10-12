@@ -38,13 +38,15 @@ function ContasReceber() {
         try {
             setLoading(true);
             const resposta = await contasReceberService.listarTodos(filtros);
-            const listaContas = resposta.data?.data || resposta.data || [];
-            setContas(listaContas);
 
-            // Calcular estatísticas
+            // ✅ Agora vai funcionar: resposta.data.data
+            const listaContas = resposta.data?.data || [];
+
+            setContas(listaContas);
             calcularEstatisticas(listaContas);
         } catch (error) {
             console.error('Erro ao carregar contas:', error);
+            setContas([]); // ✅ Importante: garantir array vazio em caso de erro
         } finally {
             setLoading(false);
         }

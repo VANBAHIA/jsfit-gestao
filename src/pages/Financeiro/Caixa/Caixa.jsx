@@ -30,7 +30,7 @@ function Caixa() {
       ]);
 
       setCaixaAberto(resCaixaAberto.data);
-      setHistoricoCaixas(resHistorico.data?.data || []);
+      setHistoricoCaixas(resHistorico.data || []);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {

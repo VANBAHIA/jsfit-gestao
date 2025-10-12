@@ -51,12 +51,16 @@ function ContasPagar() {
     const carregarContas = async () => {
         try {
             setLoading(true);
-            const resposta = await contasPagarService.listarTodos(filtros);
-            const listaContas = resposta.data?.data || resposta.data || [];
+            const resposta = await contasReceberService.listarTodos(filtros);
+
+            // ✅ Agora vai funcionar: resposta.data.data
+            const listaContas = resposta.data?.data || [];
+
             setContas(listaContas);
             calcularEstatisticas(listaContas);
         } catch (error) {
             console.error('Erro ao carregar contas:', error);
+            setContas([]); // ✅ Importante: garantir array vazio em caso de erro
         } finally {
             setLoading(false);
         }
