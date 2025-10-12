@@ -13,15 +13,18 @@ function MatriculaWizard({ onCancelar, onSucesso }) {
 
   // Estado dos dados da matrícula
   const [dadosMatricula, setDadosMatricula] = useState({
-    aluno: null,           // { id, pessoa, matricula }
-    plano: null,           // { id, nome, valorMensalidade, periodicidade }
-    turma: null,           // { id, nome } - opcional
-    desconto: null,        // { id, descricao, tipo, valor } - opcional
+    aluno: null,
+    plano: null,
+    turma: null,
+    desconto: null,
     dataInicio: '',
     diaVencimento: '',
     formaPagamento: 'DINHEIRO',
     parcelamento: 1,
-    observacoes: ''
+    observacoes: '',
+    valorMatricula: 0,      // ✅ ADICIONAR
+    valorDesconto: 0,       // ✅ ADICIONAR
+    valorFinal: 0          // ✅ ADICIONAR
   });
 
   const etapas = [
@@ -41,9 +44,9 @@ function MatriculaWizard({ onCancelar, onSucesso }) {
       case 1: return dadosMatricula.aluno !== null;
       case 2: return dadosMatricula.plano !== null;
       case 3: return true; // Turma é opcional
-      case 4: 
-        return dadosMatricula.dataInicio !== '' && 
-               (dadosMatricula.plano?.periodicidade !== 'MENSAL' || dadosMatricula.diaVencimento !== '');
+      case 4:
+        return dadosMatricula.dataInicio !== '' &&
+          (dadosMatricula.plano?.periodicidade !== 'MENSAL' || dadosMatricula.diaVencimento !== '');
       case 5: return true;
       default: return false;
     }
@@ -74,11 +77,14 @@ function MatriculaWizard({ onCancelar, onSucesso }) {
         diaVencimento: parseInt(dadosMatricula.diaVencimento) || null,
         formaPagamento: dadosMatricula.formaPagamento,
         parcelamento: parseInt(dadosMatricula.parcelamento),
-        observacoes: dadosMatricula.observacoes || null
+        observacoes: dadosMatricula.observacoes || null,
+        valorMatricula: dadosMatricula.valorMatricula,    // ✅ ADICIONAR
+        valorDesconto: dadosMatricula.valorDesconto,      // ✅ ADICIONAR
+        valorFinal: dadosMatricula.valorFinal            // ✅ ADICIONAR
       };
 
       await matriculasService.criar(payload);
-      
+
       if (onSucesso) {
         onSucesso();
       }
@@ -94,35 +100,35 @@ function MatriculaWizard({ onCancelar, onSucesso }) {
     switch (etapaAtual) {
       case 1:
         return (
-          <Step1Aluno 
+          <Step1Aluno
             alunoSelecionado={dadosMatricula.aluno}
             onSelecionarAluno={(aluno) => atualizarDados('aluno', aluno)}
           />
         );
       case 2:
         return (
-          <Step2Plano 
+          <Step2Plano
             planoSelecionado={dadosMatricula.plano}
             onSelecionarPlano={(plano) => atualizarDados('plano', plano)}
           />
         );
       case 3:
         return (
-          <Step3Turma 
+          <Step3Turma
             turmaSelecionada={dadosMatricula.turma}
             onSelecionarTurma={(turma) => atualizarDados('turma', turma)}
           />
         );
       case 4:
         return (
-          <Step4Detalhes 
+          <Step4Detalhes
             dados={dadosMatricula}
             onAtualizarDados={atualizarDados}
           />
         );
       case 5:
         return (
-          <Step5Resumo 
+          <Step5Resumo
             dados={dadosMatricula}
           />
         );
@@ -145,7 +151,7 @@ function MatriculaWizard({ onCancelar, onSucesso }) {
                 Etapa {etapaAtual} de {etapas.length}: {etapas[etapaAtual - 1].descricao}
               </p>
             </div>
-            <button 
+            <button
               onClick={onCancelar}
               className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition-colors"
             >
@@ -160,25 +166,22 @@ function MatriculaWizard({ onCancelar, onSucesso }) {
             {etapas.map((etapa, index) => (
               <React.Fragment key={etapa.numero}>
                 <div className="flex flex-col items-center flex-1">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
-                    etapa.numero < etapaAtual 
-                      ? 'bg-green-500 text-white' 
-                      : etapa.numero === etapaAtual
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${etapa.numero < etapaAtual
+                    ? 'bg-green-500 text-white'
+                    : etapa.numero === etapaAtual
                       ? 'bg-blue-600 text-white ring-4 ring-blue-200'
                       : 'bg-gray-300 text-gray-600'
-                  }`}>
+                    }`}>
                     {etapa.numero < etapaAtual ? <Check size={20} /> : etapa.numero}
                   </div>
-                  <span className={`text-xs mt-2 font-medium text-center ${
-                    etapa.numero === etapaAtual ? 'text-blue-600' : 'text-gray-600'
-                  }`}>
+                  <span className={`text-xs mt-2 font-medium text-center ${etapa.numero === etapaAtual ? 'text-blue-600' : 'text-gray-600'
+                    }`}>
                     {etapa.titulo}
                   </span>
                 </div>
                 {index < etapas.length - 1 && (
-                  <div className={`flex-1 h-1 mx-2 rounded transition-all ${
-                    etapa.numero < etapaAtual ? 'bg-green-500' : 'bg-gray-300'
-                  }`} />
+                  <div className={`flex-1 h-1 mx-2 rounded transition-all ${etapa.numero < etapaAtual ? 'bg-green-500' : 'bg-gray-300'
+                    }`} />
                 )}
               </React.Fragment>
             ))}
@@ -195,11 +198,10 @@ function MatriculaWizard({ onCancelar, onSucesso }) {
           <button
             onClick={etapaAnterior}
             disabled={etapaAtual === 1}
-            className={`px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors ${
-              etapaAtual === 1
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
+            className={`px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors ${etapaAtual === 1
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
           >
             <ChevronLeft size={20} />
             Voltar
@@ -217,11 +219,10 @@ function MatriculaWizard({ onCancelar, onSucesso }) {
               <button
                 onClick={proximaEtapa}
                 disabled={!podeAvancar()}
-                className={`px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors ${
-                  podeAvancar()
-                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                className={`px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors ${podeAvancar()
+                  ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
               >
                 Avançar
                 <ChevronRight size={20} />

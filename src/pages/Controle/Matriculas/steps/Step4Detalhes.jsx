@@ -18,7 +18,7 @@ function Step4Detalhes({ dados, onAtualizarDados }) {
     try {
       setLoadingDescontos(true);
       const response = await descontosService.listarAtivos();
-      const descontosArray = response.data?.data?.descontos || [];
+      const descontosArray = response.data?.descontos || [];
       setDescontos(descontosArray);
     } catch (error) {
       console.error('❌ Erro ao carregar descontos:', error);
@@ -43,6 +43,7 @@ function Step4Detalhes({ dados, onAtualizarDados }) {
 
     const valorFinal = valorBase - valorDesconto;
 
+    // ✅ CORRIGIR - Usar os nomes corretos
     onAtualizarDados('valorMatricula', valorBase);
     onAtualizarDados('valorDesconto', valorDesconto);
     onAtualizarDados('valorFinal', valorFinal);
@@ -195,8 +196,8 @@ function Step4Detalhes({ dados, onAtualizarDados }) {
               {descontos.map(desconto => (
                 <option key={desconto.id} value={desconto.id}>
                   {desconto.descricao} - {
-                    desconto.tipo === 'PERCENTUAL' 
-                      ? `${desconto.valor}%` 
+                    desconto.tipo === 'PERCENTUAL'
+                      ? `${desconto.valor}%`
                       : formatarValor(desconto.valor)
                   }
                 </option>
@@ -288,7 +289,7 @@ function Step4Detalhes({ dados, onAtualizarDados }) {
           <span className="text-2xl">ℹ️</span>
           <div>
             <p className="text-sm text-blue-800">
-              <strong>Atenção:</strong> Confira todos os dados antes de avançar. 
+              <strong>Atenção:</strong> Confira todos os dados antes de avançar.
               Na próxima etapa você verá um resumo completo para confirmação final.
             </p>
           </div>

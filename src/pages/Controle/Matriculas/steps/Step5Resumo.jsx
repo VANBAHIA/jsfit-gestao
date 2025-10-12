@@ -278,7 +278,7 @@ function Step5Resumo({ dados }) {
 
           <div>
             <span className="text-xs font-semibold text-gray-500 uppercase block mb-1">
-              Status Inicial
+              Situação Inicial
             </span>
             <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">
               ATIVA

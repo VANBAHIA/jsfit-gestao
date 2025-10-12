@@ -15,7 +15,7 @@ function Step2Plano({ planoSelecionado, onSelecionarPlano }) {
     try {
       setLoading(true);
       const response = await planosService.listarAtivos();
-      const planosArray = response.data?.data?.planos || [];
+      const planosArray = response.data?.planos || [];
       setPlanos(planosArray);
     } catch (error) {
       console.error('❌ Erro ao carregar planos:', error);

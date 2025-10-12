@@ -22,7 +22,7 @@ function Matriculas() {
       const resposta = await matriculasService.listarTodos();
       console.log('📦 Resposta da API:', resposta);
 
-      setMatriculas(resposta.data?.data?.matriculas || []);
+      setMatriculas(resposta.data?.matriculas || []);
 
       setErro(null);
     } catch (error) {

@@ -15,7 +15,7 @@ function Step3Turma({ turmaSelecionada, onSelecionarTurma }) {
     try {
       setLoading(true);
       const response = await turmasService.listarAtivas();
-      const turmasArray = response.data?.data?.turmas || [];
+      const turmasArray = response.data?.turmas || [];
       setTurmas(turmasArray);
     } catch (error) {
       console.error('❌ Erro ao carregar turmas:', error);
