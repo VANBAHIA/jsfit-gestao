@@ -2,8 +2,17 @@ import api from './axiosConfig';
 
 export const contasPagarService = {
   listarTodos: async (params = {}) => {
-    const response = await api.get('/contas-pagar', { params });
-    return response.data;
+    try {
+      const response = await api.get('/contas-pagar', { params });
+      
+      // ✅ CORREÇÃO: Retornar apenas { data: response.data }
+      // A API já retorna: { statusCode, success, data: [...] }
+      return { data: response.data };
+      
+    } catch (error) {
+      console.error('❌ Erro ao listar contas a pagar:', error);
+      throw error;
+    }
   },
 
   buscarPorId: async (id) => {

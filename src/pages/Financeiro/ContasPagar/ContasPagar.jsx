@@ -51,33 +51,41 @@ function ContasPagar() {
     const carregarContas = async () => {
         try {
             setLoading(true);
-            const resposta = await contasReceberService.listarTodos(filtros);
+            const resposta = await contasPagarService.listarTodos(filtros);
 
-            // ✅ Agora vai funcionar: resposta.data.data
-            const listaContas = resposta.data?.data || [];
+            // ✅ A API retorna: { statusCode, success, data: { total, contas: [...] } }
+            const listaContas = resposta.data?.data?.contas || [];
 
             setContas(listaContas);
             calcularEstatisticas(listaContas);
         } catch (error) {
             console.error('Erro ao carregar contas:', error);
             setContas([]); // ✅ Importante: garantir array vazio em caso de erro
+            calcularEstatisticas([]); // ✅ Calcular stats com array vazio
         } finally {
             setLoading(false);
         }
     };
 
     const calcularEstatisticas = (listaContas) => {
+        // ✅ VALIDAÇÃO: Garantir que é um array
+        if (!Array.isArray(listaContas)) {
+            console.error('❌ calcularEstatisticas recebeu algo que não é array:', listaContas);
+            listaContas = [];
+        }
+
         const stats = {
             total: listaContas.length,
             pendentes: listaContas.filter(c => c.status === 'PENDENTE').length,
             pagas: listaContas.filter(c => c.status === 'PAGO').length,
             vencidas: listaContas.filter(c => c.status === 'VENCIDO').length,
-            valorTotal: listaContas.reduce((acc, c) => acc + c.valorFinal, 0),
-            valorPago: listaContas.filter(c => c.status === 'PAGO').reduce((acc, c) => acc + c.valorPago, 0),
-            valorPendente: listaContas.filter(c => c.status === 'PENDENTE').reduce((acc, c) => acc + c.valorRestante, 0)
+            valorTotal: listaContas.reduce((acc, c) => acc + (c.valorFinal || 0), 0),
+            valorPago: listaContas.filter(c => c.status === 'PAGO').reduce((acc, c) => acc + (c.valorPago || 0), 0),
+            valorPendente: listaContas.filter(c => c.status === 'PENDENTE').reduce((acc, c) => acc + (c.valorRestante || 0), 0)
         };
         setStats(stats);
     };
+
 
     const handleNovaConta = () => {
         setContaSelecionada(null);
@@ -88,6 +96,8 @@ function ContasPagar() {
         try {
             const resposta = await contasPagarService.buscarPorId(conta.id);
             setContaSelecionada(resposta.data.data);
+            console.log('📦 buscarPorId resposta:', resposta);
+            console.log('📦 resposta.data:', resposta.data);
             setMostrarForm(true);
         } catch (error) {
             alert('Erro ao carregar dados da conta: ' + error.message);
@@ -97,6 +107,8 @@ function ContasPagar() {
     const handleVisualizarConta = async (conta) => {
         try {
             const resposta = await contasPagarService.buscarPorId(conta.id);
+            console.log('📦 buscarPorId resposta:', resposta);
+            console.log('📦 resposta.data:', resposta.data);
             setContaSelecionada(resposta.data.data);
             setMostrarDetalhes(true);
         } catch (error) {

@@ -72,34 +72,55 @@ function ContaPagarForm({ conta, onSalvar, onCancelar }) {
     });
   };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.descricao) {
-      alert('Preencha a descrição da conta');
-      return;
+        alert('Preencha a descrição da conta');
+        return;
     }
 
+    // ✅ DEBUG: Ver o que está sendo enviado
+    console.log('📤 Dados que serão enviados:', formData);
+    console.log('📤 Modo parcelado?', modoParcelado);
+    console.log('📤 Editando conta?', !!conta);
+
     try {
-      setSalvando(true);
-      
-      if (conta) {
-        await contasPagarService.atualizar(conta.id, formData);
-      } else {
-        if (modoParcelado && formData.totalParcelas > 1) {
-          await contasPagarService.criarParcelado(formData);
+        setSalvando(true);
+        
+        if (conta) {
+            console.log('🔄 ATUALIZANDO conta:', conta.id);
+            const resultado = await contasPagarService.atualizar(conta.id, formData);
+            console.log('✅ Resultado atualização:', resultado);
         } else {
-          await contasPagarService.criar(formData);
+            if (modoParcelado && formData.totalParcelas > 1) {
+                console.log('📊 CRIANDO PARCELADO com', formData.totalParcelas, 'parcelas');
+                const resultado = await contasPagarService.criarParcelado(formData);
+                console.log('✅ Resultado parcelado:', resultado);
+            } else {
+                console.log('➕ CRIANDO conta simples');
+                const resultado = await contasPagarService.criar(formData);
+                console.log('✅ Resultado criação:', resultado);
+            }
         }
-      }
-      
-      onSalvar();
+        
+        onSalvar();
     } catch (error) {
-      alert('Erro ao salvar: ' + (error.response?.data?.message || error.message));
+        console.error('❌ ERRO COMPLETO:', error);
+        console.error('❌ Resposta do servidor:', error.response?.data);
+        console.error('❌ Status:', error.response?.status);
+        console.error('❌ Headers:', error.response?.headers);
+        
+        const mensagemErro = error.response?.data?.message 
+            || error.response?.data?.error 
+            || error.message 
+            || 'Erro desconhecido';
+            
+        alert('Erro ao salvar: ' + mensagemErro);
     } finally {
-      setSalvando(false);
+        setSalvando(false);
     }
-  };
+};
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto py-8 z-50">

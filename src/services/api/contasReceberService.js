@@ -2,15 +2,18 @@ import api from './axiosConfig';
 
 export const contasReceberService = {
   listarTodos: async (params = {}) => {
-  try {
-    const response = await api.get('/contas-receber', { params });
-    // ✅ A API retorna: { statusCode, success, data: [...] }
-    return { data: { data: response.data.data || response.data || [] } };
-  } catch (error) {
-    console.error('❌ Erro ao listar contas a receber:', error);
-    throw error;
-  }
-},
+    try {
+      const response = await api.get('/contas-receber', { params });
+      
+      // ✅ CORREÇÃO: Retornar apenas { data: response.data }
+      // A API já retorna: { statusCode, success, data: [...] }
+      return { data: response.data };
+      
+    } catch (error) {
+      console.error('❌ Erro ao listar contas a receber:', error);
+      throw error;
+    }
+  },
 
   buscarPorId: async (id) => {
     const response = await api.get(`/contas-receber/${id}`);
