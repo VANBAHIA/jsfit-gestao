@@ -3,7 +3,7 @@ import api from './axiosConfig';
 export const caixaService = {
   listarTodos: async (params = {}) => {
     const response = await api.get('/caixas', { params });
-    return response.data;
+    return { data: response.data };
   },
 
   buscarPorId: async (id) => {

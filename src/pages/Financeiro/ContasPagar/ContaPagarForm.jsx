@@ -72,7 +72,7 @@ function ContaPagarForm({ conta, onSalvar, onCancelar }) {
     });
   };
 
- const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.descricao) {
@@ -80,48 +80,107 @@ function ContaPagarForm({ conta, onSalvar, onCancelar }) {
         return;
     }
 
-    // ✅ DEBUG: Ver o que está sendo enviado
-    console.log('📤 Dados que serão enviados:', formData);
-    console.log('📤 Modo parcelado?', modoParcelado);
-    console.log('📤 Editando conta?', !!conta);
-
     try {
         setSalvando(true);
         
+        // ✅ Converter data para ISO-8601 completo
+        const dataVencimentoISO = new Date(formData.dataVencimento + 'T12:00:00.000Z').toISOString();
+        
+        // ✅ Preparar dados LIMPOS
+        const dadosEnvio = {
+            categoria: formData.categoria,
+            descricao: formData.descricao,
+            valorOriginal: Number(formData.valorOriginal),
+            valorDesconto: Number(formData.valorDesconto) || 0,
+            valorJuros: Number(formData.valorJuros) || 0,
+            valorMulta: Number(formData.valorMulta) || 0,
+            dataVencimento: dataVencimentoISO,
+        };
+
+        // Adicionar campos opcionais apenas se preenchidos
+        if (formData.documento) dadosEnvio.documento = formData.documento;
+        if (formData.observacoes) dadosEnvio.observacoes = formData.observacoes;
+        
+        // FormaPagamento: APENAS se estiver CRIANDO (não editando)
+        if (!conta && formData.formaPagamento) {
+            dadosEnvio.formaPagamento = formData.formaPagamento;
+        }
+        
+        // Campos de fornecedor (APENAS se categoria for FORNECEDOR)
+        if (dadosEnvio.categoria === 'FORNECEDOR') {
+            if (formData.fornecedorNome) dadosEnvio.fornecedorNome = formData.fornecedorNome;
+            if (formData.fornecedorDoc) dadosEnvio.fornecedorDoc = formData.fornecedorDoc;
+        }
+        
+        console.log('📤 Dados LIMPOS que serão enviados:', dadosEnvio);
+        console.log('📅 Data convertida:', formData.dataVencimento, '→', dataVencimentoISO);
+        
         if (conta) {
+            // =============== EDITANDO ===============
             console.log('🔄 ATUALIZANDO conta:', conta.id);
-            const resultado = await contasPagarService.atualizar(conta.id, formData);
+            const resultado = await contasPagarService.atualizar(conta.id, dadosEnvio);
             console.log('✅ Resultado atualização:', resultado);
         } else {
+            // =============== CRIANDO ===============
             if (modoParcelado && formData.totalParcelas > 1) {
+                // 📊 CRIAR PARCELADO
                 console.log('📊 CRIANDO PARCELADO com', formData.totalParcelas, 'parcelas');
-                const resultado = await contasPagarService.criarParcelado(formData);
+                
+                const dadosParcelado = {
+                    categoria: dadosEnvio.categoria,
+                    descricao: dadosEnvio.descricao,
+                    valorTotal: dadosEnvio.valorOriginal, // ✅ Backend espera "valorTotal"
+                    totalParcelas: Number(formData.totalParcelas),
+                    dataVencimentoPrimeira: dataVencimentoISO, // ✅ Backend espera "dataVencimentoPrimeira"
+                    documento: dadosEnvio.documento,
+                    observacoes: dadosEnvio.observacoes,
+                };
+                
+                // Adicionar campos de fornecedor se categoria for FORNECEDOR
+                if (dadosEnvio.categoria === 'FORNECEDOR') {
+                    dadosParcelado.fornecedorNome = dadosEnvio.fornecedorNome;
+                    dadosParcelado.fornecedorDoc = dadosEnvio.fornecedorDoc;
+                }
+                
+                console.log('📊 Dados parcelado:', dadosParcelado);
+                const resultado = await contasPagarService.criarParcelado(dadosParcelado);
                 console.log('✅ Resultado parcelado:', resultado);
             } else {
+                // ➕ CRIAR SIMPLES
                 console.log('➕ CRIANDO conta simples');
-                const resultado = await contasPagarService.criar(formData);
+                dadosEnvio.numeroParcela = 1;
+                dadosEnvio.totalParcelas = 1;
+                const resultado = await contasPagarService.criar(dadosEnvio);
                 console.log('✅ Resultado criação:', resultado);
             }
         }
         
+        alert('Conta salva com sucesso!');
         onSalvar();
     } catch (error) {
         console.error('❌ ERRO COMPLETO:', error);
         console.error('❌ Resposta do servidor:', error.response?.data);
         console.error('❌ Status:', error.response?.status);
-        console.error('❌ Headers:', error.response?.headers);
         
-        const mensagemErro = error.response?.data?.message 
-            || error.response?.data?.error 
-            || error.message 
-            || 'Erro desconhecido';
+        // Tentar extrair mensagem de erro mais específica
+        let mensagemErro = 'Erro desconhecido';
+        
+        if (error.response?.data) {
+            const resposta = error.response.data;
+            mensagemErro = resposta.message 
+                || resposta.error 
+                || resposta.details 
+                || JSON.stringify(resposta);
+        } else {
+            mensagemErro = error.message;
+        }
             
-        alert('Erro ao salvar: ' + mensagemErro);
+        alert('Erro ao salvar conta:\n' + mensagemErro + '\n\nVerifique o console para mais detalhes.');
     } finally {
         setSalvando(false);
     }
 };
-
+  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center overflow-y-auto py-8 z-50">
       <div className="bg-white rounded-lg shadow-2xl w-full max-w-4xl mx-4">

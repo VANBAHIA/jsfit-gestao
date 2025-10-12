@@ -349,8 +349,9 @@ function ContasPagar() {
                                             <button
                                                 onClick={() => handleVisualizarConta(conta)}
                                                 className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
-                                                title="Visualizar"
-                                            ></button>
+                                                title="Visualizar"                                            >
+                                                <Eye size={18} />
+                                            </button>
                                             {conta.status === 'PENDENTE' && (
                                                 <>
                                                     <button
