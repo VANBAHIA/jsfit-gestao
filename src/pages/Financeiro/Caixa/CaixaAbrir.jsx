@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { X, Unlock } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
+
 
 function CaixaAbrir({ onAbrir, onCancelar }) {
+  const { usuario } = useAuth(); 
   const [formData, setFormData] = useState({
     valorAbertura: '', // ⬅️ Mudei de 0 para string vazia
     observacoes: ''
@@ -19,7 +22,8 @@ function CaixaAbrir({ onAbrir, onCancelar }) {
     }
 
     // Pegar usuário logado
-    const usuarioLogado = localStorage.getItem('userName') || 'Sistema';
+    const usuarioLogado = usuario?.nome || 'Sistema';
+
     
     // Preparar dados no formato correto
     const dados = {

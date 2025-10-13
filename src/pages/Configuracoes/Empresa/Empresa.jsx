@@ -9,6 +9,7 @@ function Empresa() {
   const [erro, setErro] = useState(null);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [salvando, setSalvando] = useState(false);
+  
 
   useEffect(() => {
     carregarDados();

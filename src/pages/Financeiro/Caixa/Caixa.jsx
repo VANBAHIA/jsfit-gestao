@@ -5,8 +5,13 @@ import CaixaAbrir from './CaixaAbrir';
 import CaixaMovimento from './CaixaMovimento';
 import CaixaRelatorio from './CaixaRelatorio';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
+import { useAuth } from '../../../context/AuthContext';
+import CaixaSangria from './CaixaSangria';
+import CaixaSuprimento from './CaixaSuprimento';
+
 
 function Caixa() {
+  const { usuario } = useAuth();
   const [caixaAberto, setCaixaAberto] = useState(null);
   const [historicoCaixas, setHistoricoCaixas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,27 +21,33 @@ function Caixa() {
   const [tipoMovimento, setTipoMovimento] = useState('ENTRADA'); // ENTRADA ou SAIDA
   const [caixaSelecionado, setCaixaSelecionado] = useState(null);
   const [confirmFechar, setConfirmFechar] = useState({ isOpen: false });
+  const [mostrarSangria, setMostrarSangria] = useState(false);
+  const [mostrarSuprimento, setMostrarSuprimento] = useState(false);
 
   useEffect(() => {
     carregarDados();
   }, []);
 
-  const carregarDados = async () => {
-    try {
-      setLoading(true);
-      const [resCaixaAberto, resHistorico] = await Promise.all([
-        caixaService.buscarAberto().catch(() => ({ data: null })),
-        caixaService.listarTodos({ limit: 10 })
-      ]);
+const carregarDados = async () => {
+  try {
+    setLoading(true);
+    const [resCaixaAberto, resHistorico] = await Promise.all([
+      caixaService.buscarAberto().catch(() => ({ data: null })),
+      caixaService.listarTodos({ limit: 10 })
+    ]);
 
-      setCaixaAberto(resCaixaAberto.data);
-      setHistoricoCaixas(resHistorico.data?.caixas || []);
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setCaixaAberto(resCaixaAberto.data);
+    
+    // ✅ Ajustado para estrutura correta da API
+    const caixasArray = resHistorico?.data?.caixas || resHistorico?.caixas || [];
+      setHistoricoCaixas(caixasArray);
+    
+  } catch (error) {
+    console.error('Erro ao carregar dados:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleAbrirCaixa = async (dados) => {
     try {
@@ -48,26 +59,27 @@ function Caixa() {
     }
   };
 
-const handleFecharCaixa = async () => {
-  try {
-    // Pegar do contexto ou localStorage
-    const usuarioLogado = localStorage.getItem('userName') || 'Sistema';
-    
-    const dados = {
-      valorFechamento: caixaAberto.valorAbertura + caixaAberto.totalEntradas - caixaAberto.totalSaidas,
-      usuarioFechamento: usuarioLogado,
-      observacoes: 'Fechamento normal'
-    };
-    
-    await caixaService.fechar(caixaAberto.id, dados);
-    setConfirmFechar({ isOpen: false });
-    await carregarDados();
-    alert('Caixa fechado com sucesso!');
-  } catch (error) {
-    console.error('Erro:', error.response?.data);
-    alert('Erro: ' + (error.response?.data?.message || error.message));
-  }
-};
+  const handleFecharCaixa = async () => {
+    try {
+      // Pegar do contexto ou localStorage
+      const usuarioLogado = usuario?.nome || 'Sistema';
+
+
+      const dados = {
+        valorFechamento: caixaAberto.valorAbertura + caixaAberto.totalEntradas - caixaAberto.totalSaidas,
+        usuarioFechamento: usuarioLogado,
+        observacoes: 'Fechamento normal'
+      };
+
+      await caixaService.fechar(caixaAberto.id, dados);
+      setConfirmFechar({ isOpen: false });
+      await carregarDados();
+      alert('Caixa fechado com sucesso!');
+    } catch (error) {
+      console.error('Erro:', error.response?.data);
+      alert('Erro: ' + (error.response?.data?.message || error.message));
+    }
+  };
 
   const handleRegistrarMovimento = async (dados) => {
     try {
@@ -79,14 +91,26 @@ const handleFecharCaixa = async () => {
     }
   };
 
-  const handleSangria = async () => {
-    setTipoMovimento('SAIDA');
-    setMostrarMovimento(true);
+  const handleSangria = async (dados) => {
+    try {
+      await caixaService.sangria(caixaAberto.id, dados);
+      setMostrarSangria(false);
+      await carregarDados();
+      alert('Sangria realizada com sucesso!');
+    } catch (error) {
+      throw error; // Propagar erro para o componente filho mostrar
+    }
   };
 
-  const handleSuprimento = async () => {
-    setTipoMovimento('ENTRADA');
-    setMostrarMovimento(true);
+  const handleSuprimento = async (dados) => {
+    try {
+      await caixaService.suprimento(caixaAberto.id, dados);
+      setMostrarSuprimento(false);
+      await carregarDados();
+      alert('Suprimento realizado com sucesso!');
+    } catch (error) {
+      throw error;
+    }
   };
 
   const handleVisualizarRelatorio = async (caixa) => {
@@ -197,7 +221,7 @@ const handleFecharCaixa = async () => {
             </button>
 
             <button
-              onClick={handleSuprimento}
+              onClick={() => setMostrarSuprimento(true)}
               className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold flex items-center gap-2 shadow-md"
             >
               <Plus size={20} />
@@ -205,7 +229,7 @@ const handleFecharCaixa = async () => {
             </button>
 
             <button
-              onClick={handleSangria}
+              onClick={() => setMostrarSangria(true)}
               className="px-6 py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-semibold flex items-center gap-2 shadow-md"
             >
               <Minus size={20} />
@@ -275,8 +299,8 @@ const handleFecharCaixa = async () => {
                     </td>
                     <td className="px-6 py-3">
                       <span className={`px-3 py-1 text-xs font-semibold rounded-full ${movimento.tipo === 'ENTRADA'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
                         }`}>
                         {movimento.tipo === 'ENTRADA' ? '⬆️ ENTRADA' : '⬇️ SAÍDA'}
                       </span>
@@ -334,8 +358,8 @@ const handleFecharCaixa = async () => {
                   </td>
                   <td className="px-6 py-3 text-center">
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full ${caixa.status === 'ABERTO'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-gray-100 text-gray-800'
                       }`}>
                       {caixa.status === 'ABERTO' ? '🔓 ABERTO' : '🔒 FECHADO'}
                     </span>
@@ -387,6 +411,25 @@ const handleFecharCaixa = async () => {
           }}
         />
       )}
+      {mostrarSangria && (
+        <CaixaSangria
+          caixaId={caixaAberto.id}
+          saldoDisponivel={caixaAberto.valorAbertura + caixaAberto.totalEntradas - caixaAberto.totalSaidas}
+          usuarioResponsavel={usuario?.nome || 'Sistema'} 
+          onSalvar={handleSangria}
+          onCancelar={() => setMostrarSangria(false)}
+        />
+      )}
+
+      {mostrarSuprimento && (
+        <CaixaSuprimento
+          caixaId={caixaAberto.id}
+          onSalvar={handleSuprimento}
+          usuarioResponsavel={usuario?.nome || 'Sistema'} 
+          onCancelar={() => setMostrarSuprimento(false)}
+        />
+      )}
+
 
       <ConfirmDialog
         isOpen={confirmFechar.isOpen}

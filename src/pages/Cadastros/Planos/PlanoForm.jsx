@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, CreditCard, DollarSign, Calendar, FileText } from 'lucide-react';
 
 function PlanoForm({ plano, onSalvar, onCancelar }) {
+  // src/pages/Cadastros/Planos/PlanoForm.jsx
+
   const [formData, setFormData] = useState({
     codigo: '',
     nome: '',
     periodicidade: 'MENSAL',
+    tipoCobranca: 'RECORRENTE',
     numeroMeses: '',
     numeroDias: '',
     valorMensalidade: '',
@@ -18,11 +21,12 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
   useEffect(() => {
     if (plano) {
       const dadosPlano = plano.data || plano;
-      
+
       setFormData({
         codigo: dadosPlano.codigo || '',
         nome: dadosPlano.nome || '',
         periodicidade: dadosPlano.periodicidade || 'MENSAL',
+        tipoCobranca: dadosPlano.tipoCobranca || 'RECORRENTE', // ✅ NOVO
         numeroMeses: dadosPlano.numeroMeses || '',
         numeroDias: dadosPlano.numeroDias || '',
         valorMensalidade: dadosPlano.valorMensalidade || '',
@@ -30,7 +34,6 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
         status: dadosPlano.status || 'ATIVO'
       });
     } else {
-      // Gera código automático para novo plano
       gerarCodigo();
     }
   }, [plano]);
@@ -44,35 +47,25 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
   const validarFormulario = () => {
     const novosErros = {};
 
-    if (!formData.codigo.trim()) {
-      novosErros.codigo = 'Código é obrigatório';
+    // ... validações existentes
+
+    // ✅ NOVA VALIDAÇÃO
+    if (!formData.tipoCobranca) {
+      novosErros.tipoCobranca = 'Tipo de cobrança é obrigatório';
     }
 
-    if (!formData.nome.trim()) {
-      novosErros.nome = 'Nome do plano é obrigatório';
-    } else if (formData.nome.trim().length < 3) {
-      novosErros.nome = 'Nome deve ter pelo menos 3 caracteres';
+    // ✅ VALIDAÇÃO: Plano único não pode ser MENSAL
+    if (formData.tipoCobranca === 'UNICA' && formData.periodicidade === 'MENSAL') {
+      novosErros.periodicidade = 'Plano com cobrança única não pode ter periodicidade MENSAL';
     }
 
-    if (!formData.valorMensalidade || formData.valorMensalidade <= 0) {
-      novosErros.valorMensalidade = 'Valor deve ser maior que zero';
-    }
-
-    // Validação para periodicidade MESES
-    if (formData.periodicidade === 'MESES') {
-      if (!formData.numeroMeses || formData.numeroMeses <= 0) {
+    // ✅ VALIDAÇÃO: Plano recorrente personalizado precisa de duração
+    if (formData.tipoCobranca === 'RECORRENTE') {
+      if (formData.periodicidade === 'MESES' && (!formData.numeroMeses || formData.numeroMeses <= 0)) {
         novosErros.numeroMeses = 'Informe o número de meses';
-      } else if (formData.numeroMeses > 120) {
-        novosErros.numeroMeses = 'Máximo de 120 meses';
       }
-    }
-
-    // Validação para periodicidade DIAS
-    if (formData.periodicidade === 'DIAS') {
-      if (!formData.numeroDias || formData.numeroDias <= 0) {
+      if (formData.periodicidade === 'DIAS' && (!formData.numeroDias || formData.numeroDias <= 0)) {
         novosErros.numeroDias = 'Informe o número de dias';
-      } else if (formData.numeroDias > 3650) {
-        novosErros.numeroDias = 'Máximo de 3650 dias (10 anos)';
       }
     }
 
@@ -91,6 +84,7 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
       codigo: formData.codigo.trim(),
       nome: formData.nome.trim(),
       periodicidade: formData.periodicidade,
+      tipoCobranca: formData.tipoCobranca, // ✅ NOVO
       valorMensalidade: parseFloat(formData.valorMensalidade),
       status: formData.status,
       descricao: formData.descricao.trim() || undefined
@@ -113,7 +107,7 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
 
   const handleChange = (campo, valor) => {
     setFormData(prev => ({ ...prev, [campo]: valor }));
-    
+
     if (errors[campo]) {
       setErrors(prev => ({ ...prev, [campo]: null }));
     }
@@ -161,8 +155,8 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
               {plano ? 'Editar Plano' : 'Novo Plano'}
             </h3>
           </div>
-          <button 
-            onClick={onCancelar} 
+          <button
+            onClick={onCancelar}
             className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition-colors"
             title="Fechar"
           >
@@ -184,9 +178,8 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
                     required
                     value={formData.codigo}
                     onChange={(e) => handleChange('codigo', e.target.value.toUpperCase())}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.codigo ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.codigo ? 'border-red-300' : 'border-gray-300'
+                      }`}
                     placeholder="Ex: PL001"
                     maxLength={20}
                   />
@@ -204,9 +197,8 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
                     required
                     value={formData.nome}
                     onChange={(e) => handleChange('nome', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.nome ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.nome ? 'border-red-300' : 'border-gray-300'
+                      }`}
                     placeholder="Ex: Plano Mensal Premium"
                     maxLength={100}
                   />
@@ -233,6 +225,68 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
                 </select>
               </div>
 
+              {/* ✅ NOVO CAMPO: Tipo de Cobrança */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <CreditCard className="inline mr-2" size={16} />
+                  Tipo de Cobrança *
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleChange('tipoCobranca', 'RECORRENTE')}
+                    className={`px-4 py-3 rounded-lg border-2 font-medium transition-all ${formData.tipoCobranca === 'RECORRENTE'
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                      }`}
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-2xl">🔄</span>
+                      <span className="text-sm font-semibold">Recorrente</span>
+                      <span className="text-xs">Renovação automática</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleChange('tipoCobranca', 'UNICA')}
+                    className={`px-4 py-3 rounded-lg border-2 font-medium transition-all ${formData.tipoCobranca === 'UNICA'
+                      ? 'border-green-500 bg-green-50 text-green-700'
+                      : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                      }`}
+                  >
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-2xl">💰</span>
+                      <span className="text-sm font-semibold">Única</span>
+                      <span className="text-xs">Pagamento único</span>
+                    </div>
+                  </button>
+                </div>
+                {errors.tipoCobranca && (
+                  <p className="text-xs text-red-600 mt-2">⚠️ {errors.tipoCobranca}</p>
+                )}
+
+                {/* Dica contextual */}
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-xs text-blue-800">
+                    {formData.tipoCobranca === 'RECORRENTE' ? (
+                      <>
+                        <strong>Recorrente:</strong> O sistema gerará cobranças automaticamente
+                        todo mês/período até o cancelamento da matrícula.
+                        <br />
+                        <em className="text-blue-600">Exemplo: Mensalidades, assinaturas</em>
+                      </>
+                    ) : (
+                      <>
+                        <strong>Única:</strong> Será gerada apenas 1 cobrança no valor total.
+                        Ideal para planos de período fixo pagos à vista.
+                        <br />
+                        <em className="text-green-600">Exemplo: Trimestral à vista, Semestral à vista</em>
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
               {/* Campos Condicionais */}
               {formData.periodicidade === 'MESES' && (
                 <div>
@@ -246,9 +300,8 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
                     required
                     value={formData.numeroMeses}
                     onChange={(e) => handleChange('numeroMeses', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.numeroMeses ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.numeroMeses ? 'border-red-300' : 'border-gray-300'
+                      }`}
                     placeholder="Informe a quantidade de meses"
                   />
                   {errors.numeroMeses && (
@@ -272,9 +325,8 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
                     required
                     value={formData.numeroDias}
                     onChange={(e) => handleChange('numeroDias', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.numeroDias ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.numeroDias ? 'border-red-300' : 'border-gray-300'
+                      }`}
                     placeholder="Informe a quantidade de dias"
                   />
                   {errors.numeroDias && (
@@ -304,9 +356,8 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
                     value={formData.valorMensalidade}
                     onChange={(e) => handleChange('valorMensalidade', e.target.value)}
                     onBlur={(e) => handleChange('valorMensalidade', formatarValorMonetario(e.target.value))}
-                    className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.valorMensalidade ? 'border-red-300' : 'border-gray-300'
-                    }`}
+                    className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.valorMensalidade ? 'border-red-300' : 'border-gray-300'
+                      }`}
                     placeholder="0,00"
                   />
                 </div>
@@ -355,28 +406,38 @@ function PlanoForm({ plano, onSalvar, onCancelar }) {
                 </p>
               </div>
 
-              {/* Card Informativo */}
+              {/* Card Informativo Atualizado */}
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mt-6">
                 <div className="flex items-start gap-3">
                   <div className="text-2xl flex-shrink-0">💡</div>
                   <div>
-                    <h6 className="font-semibold text-blue-900 mb-2">Informações sobre Planos</h6>
-                    <div className="text-sm text-blue-800 space-y-2">
-                      <p>
-                        <strong>Periodicidade:</strong> Define a frequência de cobrança do plano.
-                      </p>
-                      <p>
-                        <strong>Planos Personalizados:</strong> Use "Meses" ou "Dias" para criar planos com durações específicas.
-                      </p>
-                      <p>
-                        <strong>Exemplos:</strong>
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 ml-2 text-xs">
-                        <li>Plano Mensal - R$ 99,90 (renovação mensal)</li>
-                        <li>Plano Trimestral - R$ 89,90/mês (cobrado a cada 3 meses)</li>
-                        <li>Plano 10 Dias - R$ 50,00 (período experimental)</li>
-                        <li>Plano 18 Meses - R$ 79,90/mês (promoção especial)</li>
-                      </ul>
+                    <h6 className="font-semibold text-blue-900 mb-2">Como Configurar Planos</h6>
+                    <div className="text-sm text-blue-800 space-y-3">
+                      <div>
+                        <p className="font-semibold mb-1">🔄 Planos Recorrentes (Renovação Automática):</p>
+                        <ul className="list-disc list-inside space-y-1 ml-2 text-xs">
+                          <li><strong>Mensal:</strong> R$ 150/mês - Gera cobrança todo mês</li>
+                          <li><strong>Trimestral:</strong> R$ 130/mês - Gera 3 cobranças mensais</li>
+                          <li><strong>Semestral:</strong> R$ 120/mês - Gera 6 cobranças mensais</li>
+                          <li><strong>Anual:</strong> R$ 100/mês - Gera 12 cobranças mensais</li>
+                        </ul>
+                      </div>
+
+                      <div>
+                        <p className="font-semibold mb-1">💰 Planos com Cobrança Única (À Vista):</p>
+                        <ul className="list-disc list-inside space-y-1 ml-2 text-xs">
+                          <li><strong>Trimestral:</strong> R$ 390 - 1 cobrança única (3 meses)</li>
+                          <li><strong>Semestral:</strong> R$ 720 - 1 cobrança única (6 meses)</li>
+                          <li><strong>Anual:</strong> R$ 1.200 - 1 cobrança única (12 meses)</li>
+                          <li><strong>Day Use:</strong> R$ 30 - 1 cobrança (1 dia de acesso)</li>
+                        </ul>
+                      </div>
+
+                      <div className="pt-2 border-t border-blue-300">
+                        <p className="text-xs font-semibold text-blue-900">
+                          ⚠️ Importante: O tipo de cobrança define se haverá renovação automática ou pagamento único!
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>

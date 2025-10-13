@@ -3,12 +3,12 @@ import api from './axiosConfig';
 export const caixaService = {
   listarTodos: async (params = {}) => {
     const response = await api.get('/caixas', { params });
-    return { data: response.data };
+    return response.data; // ⬅️ REMOVER O ENCAPSULAMENTO
   },
 
   buscarPorId: async (id) => {
     const response = await api.get(`/caixas/${id}`);
-    return { data: response.data };
+    return response.data; // ⬅️ REMOVER O ENCAPSULAMENTO
   },
 
   buscarAberto: async () => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LogIn, User, Lock, Eye, EyeOff, Loader, AlertCircle } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 function LoginPage() {
   const { login } = useAuth();

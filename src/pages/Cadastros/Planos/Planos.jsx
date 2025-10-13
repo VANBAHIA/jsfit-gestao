@@ -16,7 +16,8 @@ function Planos() {
   const [filtros, setFiltros] = useState({
     busca: '',
     status: '',
-    periodicidade: ''
+    periodicidade: '',
+    tipoCobranca: '' // ✅ NOVO
   });
 
   useEffect(() => {
@@ -27,10 +28,10 @@ function Planos() {
     try {
       setLoading(true);
       const resposta = await planosService.listarTodos();
-      
+
       const planosData = resposta.data?.data || resposta.data || {};
       const planosArray = planosData.planos || [];
-      
+
       setPlanos(planosArray);
       setErro(null);
     } catch (error) {
@@ -96,7 +97,7 @@ function Planos() {
   };
 
   const limparFiltros = () => {
-    setFiltros({ busca: '', status: '', periodicidade: '' });
+    setFiltros({ busca: '', status: '', periodicidade: '', tipoCobranca: '' });
   };
 
   const formatarValor = (valor) => {
@@ -108,7 +109,7 @@ function Planos() {
 
   const obterTextoPeriodicidade = (plano) => {
     const { periodicidade, numeroMeses, numeroDias } = plano;
-    
+
     switch (periodicidade) {
       case 'MENSAL': return 'Mensal';
       case 'BIMESTRAL': return 'Bimestral';
@@ -124,13 +125,14 @@ function Planos() {
 
   const planosFiltrados = planos.filter(plano => {
     const busca = filtros.busca.toLowerCase();
-    const matchBusca = !filtros.busca || 
+    const matchBusca = !filtros.busca ||
       plano.nome?.toLowerCase().includes(busca) ||
       plano.codigo?.toLowerCase().includes(busca);
     const matchStatus = !filtros.status || plano.status === filtros.status;
     const matchPeriodicidade = !filtros.periodicidade || plano.periodicidade === filtros.periodicidade;
+    const matchTipoCobranca = !filtros.tipoCobranca || plano.tipoCobranca === filtros.tipoCobranca; // ✅ NOVO
 
-    return matchBusca && matchStatus && matchPeriodicidade;
+    return matchBusca && matchStatus && matchPeriodicidade && matchTipoCobranca;
   });
 
   if (loading) {
@@ -183,6 +185,16 @@ function Planos() {
             </div>
             <div>
               <select
+                value={filtros.tipoCobranca}
+                onChange={(e) => handleFiltroChange('tipoCobranca', e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">Todos os Tipos</option>
+                <option value="RECORRENTE">🔄 Recorrente</option>
+                <option value="UNICA">💰 Única</option>
+              </select>
+            </div>
+            <div>
+              <select
                 value={filtros.periodicidade}
                 onChange={(e) => handleFiltroChange('periodicidade', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
@@ -228,6 +240,7 @@ function Planos() {
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Código</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Nome do Plano</th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Tipo de Cobrança</th>
                 <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Periodicidade</th>
                 <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase">Valor</th>
                 <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
@@ -256,6 +269,14 @@ function Planos() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
+                    <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${plano.tipoCobranca === 'RECORRENTE'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-green-100 text-green-800'
+                      }`}>
+                      {plano.tipoCobranca === 'RECORRENTE' ? '🔄 Recorrente' : '💰 Única'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
                     <span className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
                       {obterTextoPeriodicidade(plano)}
                     </span>
@@ -266,23 +287,22 @@ function Planos() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                      plano.status === 'ATIVO'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${plano.status === 'ATIVO'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                      }`}>
                       {plano.status}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
                       <button onClick={() => handleEditarPlano(plano)}
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" 
+                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Editar plano">
                         <Edit size={18} />
                       </button>
                       <button onClick={() => handleConfirmarExclusao(plano)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors" 
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                         title="Excluir plano">
                         <Trash2 size={18} />
                       </button>

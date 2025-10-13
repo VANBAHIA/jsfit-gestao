@@ -2,15 +2,25 @@ import React from 'react';
 import { X, Download, Printer, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 
 function CaixaRelatorio({ caixa, onFechar }) {
-  
+
+  // ✅ Validações e valores padrão
+  const dadosCaixa = caixa?.caixa || caixa || {};
+  const valores = caixa?.valores || {
+    valorAbertura: 0,
+    totalEntradas: 0,
+    totalSaidas: 0
+  };
+  const movimentos = caixa?.movimentos || [];
+
   const formatarMoeda = (valor) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(valor);
+    }).format(valor || 0);
   };
 
   const formatarData = (data) => {
+    if (!data) return '--/--/----';
     return new Date(data).toLocaleDateString('pt-BR');
   };
 
@@ -18,10 +28,10 @@ function CaixaRelatorio({ caixa, onFechar }) {
     return hora || '--:--';
   };
 
-  const saldoFinal = caixa.valores.valorAbertura + caixa.valores.totalEntradas - caixa.valores.totalSaidas;
+  const saldoFinal = valores.valorAbertura + valores.totalEntradas - valores.totalSaidas;
 
   // Agrupar movimentos por forma de pagamento
-  const movimentosPorForma = caixa.movimentos?.reduce((acc, mov) => {
+  const movimentosPorForma = movimentos.reduce((acc, mov) => {
     const forma = mov.formaPagamento || 'NÃO INFORMADO';
     if (!acc[forma]) {
       acc[forma] = { entradas: 0, saidas: 0 };
@@ -33,6 +43,7 @@ function CaixaRelatorio({ caixa, onFechar }) {
     }
     return acc;
   }, {});
+
 
   const handleImprimir = () => {
     window.print();
@@ -93,11 +104,10 @@ function CaixaRelatorio({ caixa, onFechar }) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Status:</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                    caixa.caixa?.status === 'ABERTO' 
-                      ? 'bg-green-100 text-green-800' 
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${caixa.caixa?.status === 'ABERTO'
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
-                  }`}>
+                    }`}>
                     {caixa.caixa?.status}
                   </span>
                 </div>
@@ -223,20 +233,18 @@ function CaixaRelatorio({ caixa, onFechar }) {
                         {new Date(mov.dataHora).toLocaleString('pt-BR')}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          mov.tipo === 'ENTRADA'
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${mov.tipo === 'ENTRADA'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
-                        }`}>
+                          }`}>
                           {mov.tipo === 'ENTRADA' ? '⬆️ ENTRADA' : '⬇️ SAÍDA'}
                         </span>
                       </td>
                       <td className="px-4 py-3">{mov.descricao}</td>
                       <td className="px-4 py-3 text-gray-600">{mov.categoria || '--'}</td>
                       <td className="px-4 py-3 text-gray-600">{mov.formaPagamento}</td>
-                      <td className={`px-4 py-3 text-right font-bold ${
-                        mov.tipo === 'ENTRADA' ? 'text-green-600' : 'text-red-600'
-                      }`}>
+                      <td className={`px-4 py-3 text-right font-bold ${mov.tipo === 'ENTRADA' ? 'text-green-600' : 'text-red-600'
+                        }`}>
                         {mov.tipo === 'ENTRADA' ? '+' : '-'} {formatarMoeda(mov.valor)}
                       </td>
                     </tr>
