@@ -5,8 +5,6 @@ export const contasPagarService = {
     try {
       const response = await api.get('/contas-pagar', { params });
       
-      // ✅ CORREÇÃO: Retornar apenas { data: response.data }
-      // A API já retorna: { statusCode, success, data: [...] }
       return { data: response.data };
       
     } catch (error) {
@@ -32,11 +30,6 @@ export const contasPagarService = {
 
   criarParcelado: async (dados) => {
     const response = await api.post('/contas-pagar/parcelado', dados);
-    return response.data;
-  },
-
-  atualizar: async (id, dados) => {
-    const response = await api.put(`/contas-pagar/${id}`, dados);
     return response.data;
   },
 

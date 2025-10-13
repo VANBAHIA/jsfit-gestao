@@ -1,10 +1,12 @@
 import api from './axiosConfig';
 
 export const descontosService = {
+
   listarTodos: async (params = {}) => {
     try {
       const response = await api.get('/descontos', { params });
-      return response.data;
+      // ✅ CORREÇÃO: Retornar { data: response.data } para manter padrão
+      return { data: response.data };
     } catch (error) {
       console.error('❌ Erro ao listar descontos:', error);
       throw error;
@@ -16,7 +18,8 @@ export const descontosService = {
       const response = await api.get('/descontos', { 
         params: { status: 'ATIVO' } 
       });
-      return response.data;
+      // ✅ CORREÇÃO: Retornar { data: response.data } para manter padrão
+      return { data: response.data };
     } catch (error) {
       console.error('❌ Erro ao listar descontos ativos:', error);
       throw error;

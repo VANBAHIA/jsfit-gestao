@@ -48,6 +48,7 @@ function ContaReceberForm({ conta, onSalvar, onCancelar }) {
     }
   }, [conta]);
 
+
   const carregarDados = async () => {
     try {
       const [resAlunos, resPlanos, resDescontos] = await Promise.all([
@@ -57,10 +58,14 @@ function ContaReceberForm({ conta, onSalvar, onCancelar }) {
       ]);
 
       setAlunos(resAlunos.data?.data || []);
-      setPlanos(resPlanos.data?.data || []);
-      setDescontos(resDescontos.data?.data || []);
+      setPlanos(resPlanos.data?.data?.planos || []);
+      setDescontos(resDescontos.data?.data?.descontos || []);
+
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
+      setAlunos([]);
+      setPlanos([]);
+      setDescontos([]);
     }
   };
 
@@ -104,7 +109,7 @@ function ContaReceberForm({ conta, onSalvar, onCancelar }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.alunoId) {
       alert('Selecione um aluno');
       return;
@@ -112,13 +117,13 @@ function ContaReceberForm({ conta, onSalvar, onCancelar }) {
 
     try {
       setSalvando(true);
-      
+
       if (conta) {
         await contasReceberService.atualizar(conta.id, formData);
       } else {
         await contasReceberService.criar(formData);
       }
-      
+
       onSalvar();
     } catch (error) {
       alert('Erro ao salvar: ' + (error.response?.data?.message || error.message));
@@ -127,7 +132,7 @@ function ContaReceberForm({ conta, onSalvar, onCancelar }) {
     }
   };
 
-  const alunosFiltrados = alunos.filter(aluno => 
+  const alunosFiltrados = alunos.filter(aluno =>
     aluno.pessoa?.nome1?.toLowerCase().includes(buscaAluno.toLowerCase()) ||
     aluno.matricula?.includes(buscaAluno)
   );
@@ -200,11 +205,14 @@ function ContaReceberForm({ conta, onSalvar, onCancelar }) {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Nenhum</option>
-                {descontos.filter(d => d.status === 'ATIVO').map(desconto => (
-                  <option key={desconto.id} value={desconto.id}>
-                    {desconto.descricao} - {desconto.tipo === 'PERCENTUAL' ? `${desconto.valor}%` : `R$ ${desconto.valor}`}
-                  </option>
-                ))}
+                {descontos
+                  .filter(d => d.status === 'ATIVO')
+                  .map(desconto => (
+                    <option key={desconto.id} value={desconto.id}>
+                      {desconto.descricao} - {desconto.tipo === 'PERCENTUAL' ? `${desconto.valor}%` : `R$ ${desconto.valor.toFixed(2)}`}
+                    </option>
+                  ))
+                }
               </select>
             </div>
           </div>

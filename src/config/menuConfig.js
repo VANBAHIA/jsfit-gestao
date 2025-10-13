@@ -1,6 +1,7 @@
 import {
   Users,
   UserCheck,
+  UserCog,
   GraduationCap,
   FileText,
   Dumbbell,
@@ -47,7 +48,7 @@ export const menuConfig = [
       {
         id: 'matriculas',
         label: 'Matrículas',
-        icon: FileText,  // ← Já importado no topo
+        icon: FileText,
         rota: '/controle/matriculas',
         descricao: 'Gestão de matrículas de alunos'
       },
@@ -57,7 +58,6 @@ export const menuConfig = [
         icon: Users,
         descricao: 'Cadastro e gestão de turmas'
       },
-
       {
         id: 'instrutores',
         label: 'Instrutores',
@@ -146,12 +146,12 @@ export const menuConfig = [
         descricao: 'Receitas e recebimentos'
       },
       {
-      id: 'caixa',  // ✅ Adicionar este item
-      label: 'Controle de Caixa',
-      icon: CreditCard,
-      rota: '/financeiro/caixa',
-      descricao: 'Abertura, fechamento e movimentações'
-    }
+        id: 'caixa',
+        label: 'Controle de Caixa',
+        icon: CreditCard,
+        rota: '/financeiro/caixa',
+        descricao: 'Abertura, fechamento e movimentações'
+      }
     ]
   },
   {
@@ -181,11 +181,18 @@ export const menuConfig = [
     icon: Settings,
     submenus: [
       {
-        id: 'academia',
+        id: 'dados-academia',
         label: 'Dados da Academia',
         icon: Building2,
-        rota: '/configuracoes/academia',
-        descricao: 'Informações da academia'
+        rota: '/configuracoes/empresa',
+        descricao: 'Informações cadastrais da academia'
+      },
+      {
+        id: 'usuarios',
+        label: 'Usuários do Sistema',
+        icon: UserCog,
+        rota: '/configuracoes/usuarios',
+        descricao: 'Gestão de usuários e permissões'
       },
       {
         id: 'sistema',

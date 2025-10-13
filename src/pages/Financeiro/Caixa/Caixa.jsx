@@ -30,7 +30,7 @@ function Caixa() {
       ]);
 
       setCaixaAberto(resCaixaAberto.data);
-      setHistoricoCaixas(resHistorico.data || []);
+      setHistoricoCaixas(resHistorico.data?.caixas || []);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
@@ -48,20 +48,26 @@ function Caixa() {
     }
   };
 
-  const handleFecharCaixa = async () => {
-    try {
-      const dados = {
-        valorFechamento: caixaAberto.valorAbertura + caixaAberto.totalEntradas - caixaAberto.totalSaidas,
-        observacoes: ''
-      };
-      await caixaService.fechar(caixaAberto.id, dados);
-      setConfirmFechar({ isOpen: false });
-      await carregarDados();
-      alert('Caixa fechado com sucesso!');
-    } catch (error) {
-      alert('Erro ao fechar caixa: ' + error.message);
-    }
-  };
+const handleFecharCaixa = async () => {
+  try {
+    // Pegar do contexto ou localStorage
+    const usuarioLogado = localStorage.getItem('userName') || 'Sistema';
+    
+    const dados = {
+      valorFechamento: caixaAberto.valorAbertura + caixaAberto.totalEntradas - caixaAberto.totalSaidas,
+      usuarioFechamento: usuarioLogado,
+      observacoes: 'Fechamento normal'
+    };
+    
+    await caixaService.fechar(caixaAberto.id, dados);
+    setConfirmFechar({ isOpen: false });
+    await carregarDados();
+    alert('Caixa fechado com sucesso!');
+  } catch (error) {
+    console.error('Erro:', error.response?.data);
+    alert('Erro: ' + (error.response?.data?.message || error.message));
+  }
+};
 
   const handleRegistrarMovimento = async (dados) => {
     try {
@@ -268,19 +274,17 @@ function Caixa() {
                       {new Date(movimento.dataHora).toLocaleString('pt-BR')}
                     </td>
                     <td className="px-6 py-3">
-                      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                        movimento.tipo === 'ENTRADA' 
-                          ? 'bg-green-100 text-green-800' 
+                      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${movimento.tipo === 'ENTRADA'
+                          ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
-                      }`}>
+                        }`}>
                         {movimento.tipo === 'ENTRADA' ? '⬆️ ENTRADA' : '⬇️ SAÍDA'}
                       </span>
                     </td>
                     <td className="px-6 py-3 text-sm text-gray-900">{movimento.descricao}</td>
                     <td className="px-6 py-3 text-sm text-gray-600">{movimento.formaPagamento}</td>
-                    <td className={`px-6 py-3 text-sm text-right font-bold ${
-                      movimento.tipo === 'ENTRADA' ? 'text-green-600' : 'text-red-600'
-                    }`}>
+                    <td className={`px-6 py-3 text-sm text-right font-bold ${movimento.tipo === 'ENTRADA' ? 'text-green-600' : 'text-red-600'
+                      }`}>
                       {movimento.tipo === 'ENTRADA' ? '+' : '-'} {formatarMoeda(movimento.valor)}
                     </td>
                   </tr>
@@ -317,7 +321,7 @@ function Caixa() {
                     {formatarData(caixa.dataAbertura)} às {formatarHora(caixa.horaAbertura)}
                   </td>
                   <td className="px-6 py-3 text-sm text-gray-600">
-                    {caixa.dataFechamento 
+                    {caixa.dataFechamento
                       ? `${formatarData(caixa.dataFechamento)} às ${formatarHora(caixa.horaFechamento)}`
                       : 'Em aberto'
                     }
@@ -329,11 +333,10 @@ function Caixa() {
                     {caixa.valorFechamento ? formatarMoeda(caixa.valorFechamento) : '--'}
                   </td>
                   <td className="px-6 py-3 text-center">
-                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                      caixa.status === 'ABERTO' 
-                        ? 'bg-green-100 text-green-800' 
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${caixa.status === 'ABERTO'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-gray-100 text-gray-800'
-                    }`}>
+                      }`}>
                       {caixa.status === 'ABERTO' ? '🔓 ABERTO' : '🔒 FECHADO'}
                     </span>
                   </td>

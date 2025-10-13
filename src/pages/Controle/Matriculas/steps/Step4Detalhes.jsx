@@ -18,7 +18,7 @@ function Step4Detalhes({ dados, onAtualizarDados }) {
     try {
       setLoadingDescontos(true);
       const response = await descontosService.listarAtivos();
-      const descontosArray = response.data?.descontos || [];
+      const descontosArray = response.data?.data?.descontos || [];
       setDescontos(descontosArray);
     } catch (error) {
       console.error('❌ Erro ao carregar descontos:', error);

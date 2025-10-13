@@ -35,6 +35,11 @@ export const contasReceberService = {
     return response.data;
   },
 
+    atualizar: async (id, dados) => {
+    const response = await api.put(`/contas-receber/${id}`, dados);
+    return response.data;
+  },
+
   atualizarVencidas: async () => {
     const response = await api.patch('/contas-receber/atualizar-vencidas');
     return response.data;

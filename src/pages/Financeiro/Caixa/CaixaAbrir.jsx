@@ -3,20 +3,34 @@ import { X, Unlock } from 'lucide-react';
 
 function CaixaAbrir({ onAbrir, onCancelar }) {
   const [formData, setFormData] = useState({
-    valorAbertura: 0,
+    valorAbertura: '', // ⬅️ Mudei de 0 para string vazia
     observacoes: ''
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Validação: valor deve ser maior ou igual a 0
+    const valor = parseFloat(formData.valorAbertura) || 0;
+    
+    if (valor < 0) {
+      alert('O valor de abertura não pode ser negativo!');
+      return;
+    }
+
+    // Pegar usuário logado
+    const usuarioLogado = localStorage.getItem('userName') || 'Sistema';
+    
+    // Preparar dados no formato correto
     const dados = {
-      ...formData,
-      dataAbertura: new Date().toISOString().split('T')[0],
-      horaAbertura: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      usuarioAbertura: 'Sistema' // TODO: Pegar usuário logado
+      valorAbertura: valor,
+      dataAbertura: new Date().toISOString().split('T')[0], // ⬅️ YYYY-MM-DD
+      horaAbertura: new Date().toTimeString().split(' ')[0].substring(0, 5), // ⬅️ HH:MM
+      usuarioAbertura: usuarioLogado,
+      observacoes: formData.observacoes || ''
     };
 
+    console.log('📤 Enviando dados para abrir caixa:', dados);
     onAbrir(dados);
   };
 
@@ -53,12 +67,15 @@ function CaixaAbrir({ onAbrir, onCancelar }) {
                 step="0.01"
                 min="0"
                 value={formData.valorAbertura}
-                onChange={(e) => setFormData({ ...formData, valorAbertura: parseFloat(e.target.value) || 0 })}
+                onChange={(e) => setFormData({ ...formData, valorAbertura: e.target.value })}
                 className="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-lg font-semibold"
                 placeholder="0,00"
+                autoFocus
               />
             </div>
-            <p className="text-xs text-gray-500 mt-1">Valor em dinheiro disponível no início do expediente</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Valor em dinheiro disponível no início do expediente (pode ser 0)
+            </p>
           </div>
 
           <div>

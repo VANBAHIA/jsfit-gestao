@@ -15,6 +15,8 @@ import Matriculas from './pages/Controle/Matriculas/Matriculas';
 import ContasReceber from './pages/Financeiro/ContasReceber/ContasReceber';
 import ContasPagar from './pages/Financeiro/ContasPagar/ContasPagar';
 import Caixa from './pages/Financeiro/Caixa/Caixa';
+import Empresa from './pages/Configuracoes/Empresa/Empresa';
+import Usuarios from './pages/Configuracoes/Usuarios/Usuarios';
 
 function App() {
   const [openMenus, setOpenMenus] = useState({});
@@ -49,6 +51,29 @@ function App() {
   };
 
   const renderTabContent = (tab) => {
+    if (!tab) {
+      console.error('Aba não encontrada:', activeTab);
+      return (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center p-8 bg-white rounded-lg shadow-lg">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">
+              Aba não encontrada
+            </h2>
+            <p className="text-gray-600 mb-4">
+              A aba solicitada não existe ou foi removida.
+            </p>
+            <button
+              onClick={() => setActiveTab(null)}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Voltar ao Início
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     const IconComponent = tab.icon;
 
     // Mapeamento de componentes por submenuId
@@ -85,6 +110,13 @@ function App() {
     if (tab.submenuId === 'caixa') {
       return <Caixa />;
     }
+    if (tab.submenuId === 'dados-academia') {
+      return <Empresa />;
+    }
+    if (tab.submenuId === 'usuarios') {
+      return <Usuarios />;
+    }
+
 
     // Conteúdo padrão para módulos não implementados
     return (
@@ -301,7 +333,15 @@ function App() {
       {/* Área de Conteúdo Principal */}
       <main className="flex-1 overflow-auto bg-gray-50">
         {activeTab && openTabs.length > 0 ? (
-          renderTabContent(openTabs.find(tab => tab.id === activeTab))
+          (() => {
+            const currentTab = openTabs.find(tab => tab.id === activeTab);
+            if (!currentTab) {
+              console.warn(`Aba "${activeTab}" não encontrada em openTabs`);
+              setActiveTab(null); // Reseta para tela inicial
+              return null;
+            }
+            return renderTabContent(currentTab);
+          })()
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center max-w-md">

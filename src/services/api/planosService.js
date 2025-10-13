@@ -15,7 +15,7 @@ export const planosService = {
   listarTodos: async (params = {}) => {
     try {
       const response = await api.get('/planos', { params });
-      return response.data;
+      return { data: response.data };
     } catch (error) {
       console.error('❌ Erro ao listar planos:', error);
       throw error;

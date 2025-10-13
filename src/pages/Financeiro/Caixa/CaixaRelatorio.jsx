@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Download, Printer, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 
 function CaixaRelatorio({ caixa, onFechar }) {
+  
   const formatarMoeda = (valor) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -17,7 +18,7 @@ function CaixaRelatorio({ caixa, onFechar }) {
     return hora || '--:--';
   };
 
-  const saldoFinal = caixa.valorAbertura + caixa.totalEntradas - caixa.totalSaidas;
+  const saldoFinal = caixa.valores.valorAbertura + caixa.valores.totalEntradas - caixa.valores.totalSaidas;
 
   // Agrupar movimentos por forma de pagamento
   const movimentosPorForma = caixa.movimentos?.reduce((acc, mov) => {
@@ -88,40 +89,40 @@ function CaixaRelatorio({ caixa, onFechar }) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Número:</span>
-                  <span className="font-semibold">{caixa.numero}</span>
+                  <span className="font-semibold">{caixa.caixa?.numero}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Status:</span>
                   <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                    caixa.status === 'ABERTO' 
+                    caixa.caixa?.status === 'ABERTO' 
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
-                    {caixa.status}
+                    {caixa.caixa?.status}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Abertura:</span>
                   <span className="font-semibold">
-                    {formatarData(caixa.dataAbertura)} às {formatarHora(caixa.horaAbertura)}
+                    {formatarData(caixa.caixa?.dataAbertura)} às {formatarHora(caixa.caixa?.horaAbertura)}
                   </span>
                 </div>
-                {caixa.dataFechamento && (
+                {caixa.caixa?.dataFechamento && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Fechamento:</span>
                     <span className="font-semibold">
-                      {formatarData(caixa.dataFechamento)} às {formatarHora(caixa.horaFechamento)}
+                      {formatarData(caixa.caixa?.dataFechamento)} às {formatarHora(caixa.caixa?.horaFechamento)}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span className="text-gray-600">Operador Abertura:</span>
-                  <span className="font-semibold">{caixa.usuarioAbertura}</span>
+                  <span className="font-semibold">{caixa.caixa?.usuarioAbertura}</span>
                 </div>
-                {caixa.usuarioFechamento && (
+                {caixa.caixa?.usuarioFechamento && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Operador Fechamento:</span>
-                    <span className="font-semibold">{caixa.usuarioFechamento}</span>
+                    <span className="font-semibold">{caixa.caixa?.usuarioFechamento}</span>
                   </div>
                 )}
               </div>
@@ -132,21 +133,21 @@ function CaixaRelatorio({ caixa, onFechar }) {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Abertura:</span>
-                  <span className="font-bold text-lg">{formatarMoeda(caixa.valorAbertura)}</span>
+                  <span className="font-bold text-lg">{formatarMoeda(caixa.valores.valorAbertura)}</span>
                 </div>
                 <div className="flex justify-between items-center text-green-600">
                   <span className="flex items-center gap-1">
                     <TrendingUp size={16} />
                     Entradas:
                   </span>
-                  <span className="font-bold text-lg">+ {formatarMoeda(caixa.totalEntradas)}</span>
+                  <span className="font-bold text-lg">+ {formatarMoeda(caixa.valores.totalEntradas)}</span>
                 </div>
                 <div className="flex justify-between items-center text-red-600">
                   <span className="flex items-center gap-1">
                     <TrendingDown size={16} />
                     Saídas:
                   </span>
-                  <span className="font-bold text-lg">- {formatarMoeda(caixa.totalSaidas)}</span>
+                  <span className="font-bold text-lg">- {formatarMoeda(caixa.valores.totalSaidas)}</span>
                 </div>
                 <div className="flex justify-between items-center pt-3 border-t-2 border-green-300">
                   <span className="font-semibold text-green-800">Saldo Final:</span>
