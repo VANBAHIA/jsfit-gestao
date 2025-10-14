@@ -17,7 +17,8 @@ import {
   MapPin,
   FolderOpen,
   Percent,
-  UserPlus
+  UserPlus,
+  Key // ⭐ ADICIONE ESTA LINHA
 } from 'lucide-react';
 
 /**
@@ -209,6 +210,15 @@ export const menuConfig = [
         rota: '/configuracoes/usuarios',
         descricao: 'Gestão de usuários e permissões'
       },
+      // ⭐ ITEM DE LICENÇAS ADICIONADO
+      {
+        id: 'licencas',
+        label: 'Controle de Licenças',
+        icon: Key,
+        rota: '/configuracoes/licencas',
+        descricao: 'Gestão de licenças do sistema'
+      },
+      // ⭐ FIM
       {
         id: 'sistema',
         label: 'Sistema',

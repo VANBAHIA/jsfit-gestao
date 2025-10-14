@@ -24,12 +24,14 @@ import Usuarios from './pages/Configuracoes/Usuarios/Usuarios';
 import Visitantes from './pages/Controle/Visitantes/Visitantes';
 import Frequencia from './pages/Controle/Frequencia/Frequencia';
 import FrequenciaRelatorio from './pages/Controle/Frequencia/FrequenciaRelatorio';
+import Licencas from './pages/Configuracoes/Licencas/Licencas';
+import { Key } from 'lucide-react';
 
 
 
 
 function App() {
-  
+
   const { autenticado, loading, usuario, logout } = useAuth();
   const [openMenus, setOpenMenus] = useState({});
   const [openSubmenus, setOpenSubmenus] = useState({});
@@ -55,29 +57,29 @@ function App() {
   }
 
   // Funções do sistema
-const toggleMenu = (menuId) => {
-  setOpenMenus(prev => {
-    // Se o menu já está aberto, fecha ele
-    if (prev[menuId]) {
-      return { ...prev, [menuId]: false };
-    }
-    // Se não, fecha todos e abre apenas o clicado
-    return { [menuId]: true };
-  });
-};
+  const toggleMenu = (menuId) => {
+    setOpenMenus(prev => {
+      // Se o menu já está aberto, fecha ele
+      if (prev[menuId]) {
+        return { ...prev, [menuId]: false };
+      }
+      // Se não, fecha todos e abre apenas o clicado
+      return { [menuId]: true };
+    });
+  };
 
-const toggleSubmenu = (submenuId, event) => {
-  event.stopPropagation();
-  setOpenSubmenus(prev => {
-    if (prev[submenuId]) {
-      return { ...prev, [submenuId]: false };
-    }
-    return { [submenuId]: true };
-  });
-};
+  const toggleSubmenu = (submenuId, event) => {
+    event.stopPropagation();
+    setOpenSubmenus(prev => {
+      if (prev[submenuId]) {
+        return { ...prev, [submenuId]: false };
+      }
+      return { [submenuId]: true };
+    });
+  };
 
   const handleSubmenuClick = (menu, submenu) => {
-    setOpenSubmenus({}); 
+    setOpenSubmenus({});
     openTab({
       menuId: menu.id,
       submenuId: submenu.id,
@@ -96,18 +98,17 @@ const toggleSubmenu = (submenuId, event) => {
 
   const renderTabContent = (tab) => {
     if (!tab) {
+      // ... código existente
+    }
+
+
+    if (tab.submenuId === 'licencas' && usuario?.perfil !== 'SUPER_ADMIN') {
       return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center p-8 bg-white rounded-lg shadow-lg">
-            <div className="text-6xl mb-4">⚠️</div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Aba não encontrada</h2>
-            <p className="text-gray-600 mb-4">A aba solicitada não existe ou foi removida.</p>
-            <button
-              onClick={() => setActiveTab(null)}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Voltar ao Início
-            </button>
+            <div className="text-6xl mb-4">🔒</div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Acesso Negado</h2>
+            <p className="text-gray-600">Apenas SUPER_ADMIN pode acessar este módulo.</p>
           </div>
         </div>
       );
@@ -132,6 +133,7 @@ const toggleSubmenu = (submenuId, event) => {
       'caixa': <Caixa />,
       'dados-academia': <Empresa />,
       'usuarios': <Usuarios />,
+      'licencas': <Licencas />,
       'frequencia-relatorio': <FrequenciaRelatorio />
     };
 
@@ -395,11 +397,10 @@ const toggleSubmenu = (submenuId, event) => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-200 transition-all whitespace-nowrap ${
-                      activeTab === tab.id
+                    className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-200 transition-all whitespace-nowrap ${activeTab === tab.id
                         ? 'bg-white text-blue-600 font-semibold border-t-2 border-t-blue-600 -mt-[2px]'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     <TabIcon size={16} />
                     <span className="text-sm">{tab.label}</span>
