@@ -31,9 +31,11 @@ function ContasReceber() {
     });
 
     useEffect(() => {
+       
+
         carregarContas();
     }, [filtros]);
-
+    
     const carregarContas = async () => {
         try {
             setLoading(true);
@@ -289,6 +291,7 @@ function ContasReceber() {
                                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{conta.numero}</td>
                                     <td className="px-6 py-4 text-sm text-gray-900">
                                         {conta.aluno?.pessoa?.nome1 || 'N/A'}
+                                        
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         {formatarData(conta.dataVencimento)}

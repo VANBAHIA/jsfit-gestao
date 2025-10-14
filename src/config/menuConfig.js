@@ -16,7 +16,8 @@ import {
   Briefcase,
   MapPin,
   FolderOpen,
-  Percent
+  Percent,
+  UserPlus
 } from 'lucide-react';
 
 /**
@@ -57,6 +58,20 @@ export const menuConfig = [
         label: 'Turmas',
         icon: Users,
         descricao: 'Cadastro e gestão de turmas'
+      },
+      {
+        id: 'frequencia',
+        label: 'Frequência',
+        icon: Calendar,
+        rota: '/controle/frequencia',
+        descricao: 'Controle de frequência dos alunos'
+      },
+      {
+        id: 'visitantes',
+        label: 'Visitantes',
+        icon: UserPlus,
+        rota: '/controle/visitantes',
+        descricao: 'Controle de visitantes da academia'
       },
       {
         id: 'instrutores',
@@ -160,7 +175,7 @@ export const menuConfig = [
     icon: BarChart3,
     submenus: [
       {
-        id: 'frequencia',
+        id: 'frequencia-relatorio',
         label: 'Frequência',
         icon: Calendar,
         rota: '/relatorios/frequencia',

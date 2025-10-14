@@ -67,46 +67,45 @@ function MatriculaWizard({ onCancelar, onSucesso }) {
     }
   };
 
-  const handleFinalizar = async () => {
-    try {
-      setSalvando(true);
+ const handleFinalizar = async () => {
+  try {
+    setSalvando(true);
 
-      const payload = {
-        alunoId: dadosMatricula.aluno.id,
-        planoId: dadosMatricula.plano.id,
-        turmaId: dadosMatricula.turma?.id || null,
-        descontoId: dadosMatricula.desconto?.id || null,
-        dataInicio: dadosMatricula.dataInicio,
-        diaVencimento: parseInt(dadosMatricula.diaVencimento) || null,
-        formaPagamento: dadosMatricula.formaPagamento,
-        parcelamento: parseInt(dadosMatricula.parcelamento),
-        observacoes: dadosMatricula.observacoes || null,
-        valorMatricula: dadosMatricula.valorMatricula,
-        valorDesconto: dadosMatricula.valorDesconto,
-        valorFinal: dadosMatricula.valorFinal
-      };
+    const payload = {
+      alunoId: dadosMatricula.aluno.id,
+      planoId: dadosMatricula.plano.id,
+      turmaId: dadosMatricula.turma?.id || null,
+      descontoId: dadosMatricula.desconto?.id || null,
+      dataInicio: dadosMatricula.dataInicio,
+      diaVencimento: parseInt(dadosMatricula.diaVencimento) || null,
+      formaPagamento: dadosMatricula.formaPagamento,
+      parcelamento: parseInt(dadosMatricula.parcelamento),
+      observacoes: dadosMatricula.observacoes || null,
+      valorMatricula: dadosMatricula.valorMatricula,
+      valorDesconto: dadosMatricula.valorDesconto,
+      valorFinal: dadosMatricula.valorFinal
+    };
 
-      const response = await matriculasService.criar(payload);
-      
-      // Extrair os dados da resposta
-      const matriculaCriada = response.data?.matricula || response.data;
-      const contaReceber = response.data?.contaReceber || null;
+    const response = await matriculasService.criar(payload);
+    
+    // ✅ CORREÇÃO: usar primeiraCobranca ao invés de contaReceber
+    const matriculaCriada = response.data?.matricula || response.data;
+    const contaReceber = response.data?.primeiraCobranca || null; // ⭐ MUDANÇA AQUI
 
-      // Armazenar resposta e mostrar modal de sucesso
-      setDadosResposta({
-        matricula: matriculaCriada,
-        contaReceber: contaReceber
-      });
-      
-      setMostrarSucesso(true);
+    setDadosResposta({
+      matricula: matriculaCriada,
+      contaReceber: contaReceber
+    });
+    
+    setMostrarSucesso(true);
 
-    } catch (error) {
-      console.error('❌ Erro ao criar matrícula:', error);
-      alert('Erro ao criar matrícula: ' + (error.response?.data?.message || error.message));
-    } finally {
-      setSalvando(false);
-    }
-  };
+  } catch (error) {
+    console.error('❌ Erro ao criar matrícula:', error);
+    alert('Erro ao criar matrícula: ' + (error.response?.data?.message || error.message));
+  } finally {
+    setSalvando(false);
+  }
+};
 
   const handleFecharSucesso = () => {
     setMostrarSucesso(false);

@@ -94,16 +94,32 @@ export const matriculasService = {
   /**
    * Exclui uma matrícula
    */
-  excluir: async (id) => {
-    try {
-      if (!id) throw new Error('ID da matrícula é obrigatório');
-      const response = await api.delete(`/matriculas/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error(`❌ Erro ao excluir matrícula ${id}:`, error);
-      throw error;
+/**
+ * Exclui uma matrícula
+ */
+excluir: async (id) => {
+  try {
+    if (!id) {
+      throw new Error('ID da matrícula é obrigatório');
     }
-  },
+    
+    console.log(`🗑️ Enviando solicitação de exclusão para ID: ${id}`);
+    
+    const response = await api.delete(`/matriculas/${id}`);
+    
+    console.log('✅ Resposta da exclusão:', response.data);
+    
+    return response.data;
+    
+  } catch (error) {
+    console.error(`❌ Erro ao excluir matrícula ${id}:`, {
+      status: error.response?.status,
+      mensagem: error.response?.data?.message,
+      erro: error.message
+    });
+    throw error;
+  }
+},
 
   /**
    * Lista matrículas por aluno

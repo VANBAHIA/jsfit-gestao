@@ -21,8 +21,15 @@ import ContasPagar from './pages/Financeiro/ContasPagar/ContasPagar';
 import Caixa from './pages/Financeiro/Caixa/Caixa';
 import Empresa from './pages/Configuracoes/Empresa/Empresa';
 import Usuarios from './pages/Configuracoes/Usuarios/Usuarios';
+import Visitantes from './pages/Controle/Visitantes/Visitantes';
+import Frequencia from './pages/Controle/Frequencia/Frequencia';
+import FrequenciaRelatorio from './pages/Controle/Frequencia/FrequenciaRelatorio';
+
+
+
 
 function App() {
+  
   const { autenticado, loading, usuario, logout } = useAuth();
   const [openMenus, setOpenMenus] = useState({});
   const [openSubmenus, setOpenSubmenus] = useState({});
@@ -48,22 +55,29 @@ function App() {
   }
 
   // Funções do sistema
-  const toggleMenu = (menuId) => {
-    setOpenMenus(prev => ({
-      ...prev,
-      [menuId]: !prev[menuId]
-    }));
-  };
+const toggleMenu = (menuId) => {
+  setOpenMenus(prev => {
+    // Se o menu já está aberto, fecha ele
+    if (prev[menuId]) {
+      return { ...prev, [menuId]: false };
+    }
+    // Se não, fecha todos e abre apenas o clicado
+    return { [menuId]: true };
+  });
+};
 
-  const toggleSubmenu = (submenuId, event) => {
-    event.stopPropagation();
-    setOpenSubmenus(prev => ({
-      ...prev,
-      [submenuId]: !prev[submenuId]
-    }));
-  };
+const toggleSubmenu = (submenuId, event) => {
+  event.stopPropagation();
+  setOpenSubmenus(prev => {
+    if (prev[submenuId]) {
+      return { ...prev, [submenuId]: false };
+    }
+    return { [submenuId]: true };
+  });
+};
 
   const handleSubmenuClick = (menu, submenu) => {
+    setOpenSubmenus({}); 
     openTab({
       menuId: menu.id,
       submenuId: submenu.id,
@@ -105,17 +119,20 @@ function App() {
     const componentMap = {
       'alunos': <Alunos />,
       'funcionarios': <Funcionarios />,
+      'visitantes': <Visitantes />,
       'funcoes': <Funcoes />,
       'locais': <Locais />,
       'planos': <Planos />,
       'turmas': <Turmas />,
       'descontos': <Descontos />,
       'matriculas': <Matriculas />,
+      'frequencia': <Frequencia />,
       'contas-receber': <ContasReceber />,
       'contas-pagar': <ContasPagar />,
       'caixa': <Caixa />,
       'dados-academia': <Empresa />,
-      'usuarios': <Usuarios />
+      'usuarios': <Usuarios />,
+      'frequencia-relatorio': <FrequenciaRelatorio />
     };
 
     // Retorna o componente específico ou o padrão
