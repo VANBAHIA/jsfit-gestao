@@ -4,8 +4,19 @@ import { usuariosService } from '../../../services/api/usuariosService';
 import { empresasService } from '../../../services/api/empresasService';
 import UsuarioForm from './UsuarioForm';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
+import { useProtecaoModulo } from '../../../hooks/useProtecaoModulo';
+import ErrorToast from '../../../components/common/ErrorToast';
+import { usePermissoes } from '../../../hooks/usePermissoes';
+import BotaoPermissao from '../../../components/common/BotaoPermissao';
+
 
 function Usuarios() {
+  // ⭐ Use assim
+  const [erroDelete, setErroDelete] = useState({ isOpen: false, mensagem: '' });
+
+  const { autorizado } = useProtecaoModulo(['SUPER_ADMIN', 'ADMIN', 'GERENTE']);
+  const { temPermissao } = usePermissoes();
+  const usuarioLogado = usuariosService.getUsuarioLogado();
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
@@ -31,12 +42,18 @@ function Usuarios() {
     }
   }, [empresaId]);
 
+  // Adicione esta função para obter o perfil do usuário logado
+  const getPerfilUsuarioLogado = () => {
+    const usuario = usuariosService.getUsuarioLogado();
+    return usuario?.perfil;
+  };
+
   const carregarEmpresa = async () => {
     try {
       const resposta = await empresasService.listarTodos({ limit: 1 });
       const empresasData = resposta.data?.data || resposta.data || {};
       const empresasArray = empresasData.empresas || [];
-      
+
       if (empresasArray.length > 0) {
         setEmpresaId(empresasArray[0].id);
       }
@@ -49,10 +66,18 @@ function Usuarios() {
     try {
       setLoading(true);
       const resposta = await usuariosService.listarTodos({ empresaId });
-      
-      const usuariosData = resposta.data?.data || resposta.data || {};
-      const usuariosArray = usuariosData.usuarios || [];
-      
+
+      let usuariosArray = resposta.data?.data?.usuarios || [];
+
+      // ⭐ FILTRO CORRIGIDO
+      const perfilLogado = usuariosService.getUsuarioLogado()?.perfil;
+
+      // Se NÃO for SUPER_ADMIN, exclui os SUPER_ADMIN da lista
+      if (perfilLogado !== 'SUPER_ADMIN') {
+        usuariosArray = usuariosArray.filter(u => u.perfil !== 'SUPER_ADMIN');
+      }
+      // Se FOR SUPER_ADMIN, mostra todos
+
       setUsuarios(usuariosArray);
       setErro(null);
     } catch (error) {
@@ -100,8 +125,16 @@ function Usuarios() {
   };
 
   const handleConfirmarExclusao = (usuario) => {
+    if (usuario.id === usuarioLogado?.id) {
+      setErroDelete({
+        isOpen: true,
+        mensagem: 'Você não pode excluir sua própria conta de usuário.'
+      });
+      return;
+    }
     setConfirmDelete({ isOpen: true, usuario });
   };
+
 
   const handleExcluirUsuario = async () => {
     try {
@@ -123,7 +156,7 @@ function Usuarios() {
 
   const usuariosFiltrados = usuarios.filter(user => {
     const busca = filtros.busca.toLowerCase();
-    const matchBusca = !filtros.busca || 
+    const matchBusca = !filtros.busca ||
       user.nome?.toLowerCase().includes(busca) ||
       user.nomeUsuario?.toLowerCase().includes(busca) ||
       user.email?.toLowerCase().includes(busca);
@@ -135,6 +168,7 @@ function Usuarios() {
 
   const getPerfilBadge = (perfil) => {
     const badges = {
+      SUPER_ADMIN: { bg: 'bg-purple-100', text: 'text-purple-800', icon: '👑' },
       ADMIN: { bg: 'bg-purple-100', text: 'text-purple-800', icon: '👑' },
       GERENTE: { bg: 'bg-blue-100', text: 'text-blue-800', icon: '👔' },
       INSTRUTOR: { bg: 'bg-green-100', text: 'text-green-800', icon: '🏋️' },
@@ -142,6 +176,26 @@ function Usuarios() {
     };
     return badges[perfil] || badges.USUARIO;
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader className="animate-spin text-blue-600" size={40} />
+      </div>
+    );
+  }
+
+
+  if (!autorizado) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg text-center">
+          <h3 className="font-bold text-lg mb-2">🔒 Acesso Negado</h3>
+          <p>Seu perfil não tem permissão para acessar este módulo.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -165,14 +219,16 @@ function Usuarios() {
               <p className="text-sm text-gray-600">Total: {usuariosFiltrados.length} usuários cadastrados</p>
             </div>
           </div>
-          <button 
+          <BotaoPermissao
+            modulo="usuarios"
+            acao="criar"
             onClick={handleNovoUsuario}
             disabled={!empresaId}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus size={20} />
             Novo Usuário
-          </button>
+          </BotaoPermissao>
         </div>
 
         {/* Filtros */}
@@ -312,32 +368,36 @@ function Usuarios() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                        usuario.situacao === 'ATIVO'
-                          ? 'bg-green-100 text-green-800'
-                          : usuario.situacao === 'BLOQUEADO'
+                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${usuario.situacao === 'ATIVO'
+                        ? 'bg-green-100 text-green-800'
+                        : usuario.situacao === 'BLOQUEADO'
                           ? 'bg-red-100 text-red-800'
                           : 'bg-gray-100 text-gray-800'
-                      }`}>
+                        }`}>
                         {usuario.situacao || 'ATIVO'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
-                        <button
+                        <BotaoPermissao
+                          modulo="usuarios"
+                          acao="editar"
                           onClick={() => handleEditarUsuario(usuario)}
                           className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
                           title="Editar usuário"
                         >
                           <Edit size={18} />
-                        </button>
-                        <button
+                        </BotaoPermissao>
+                        <BotaoPermissao
+                          modulo="usuarios"
+                          acao="excluir"
                           onClick={() => handleConfirmarExclusao(usuario)}
                           className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                           title="Excluir usuário"
                         >
                           <Trash2 size={18} />
-                        </button>
+                        </BotaoPermissao>
+
                       </div>
                     </td>
                   </tr>
@@ -358,7 +418,11 @@ function Usuarios() {
                 : 'Nenhum usuário cadastrado'}
             </p>
             <p className="text-sm text-gray-500">
-              {!filtros.busca && !filtros.perfil && !filtros.situacao && 'Clique em "Novo Usuário" para começar'}
+              {!filtros.busca && !filtros.perfil && !filtros.situacao && (
+                temPermissao('usuarios', 'criar')
+                  ? 'Clique em "Novo Usuário" para começar'
+                  : 'Você não tem permissão para criar usuários'
+              )}
             </p>
           </div>
         )}
@@ -377,7 +441,12 @@ function Usuarios() {
           salvando={salvando}
         />
       )}
-
+      {erroDelete.isOpen && (
+        <ErrorToast
+          mensagem={erroDelete.mensagem}
+          onFechar={() => setErroDelete({ isOpen: false, mensagem: '' })}
+        />
+      )}
       {/* Diálogo de Confirmação */}
       <ConfirmDialog
         isOpen={confirmDelete.isOpen}

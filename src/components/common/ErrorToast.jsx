@@ -3,12 +3,14 @@ import { AlertCircle, X } from 'lucide-react';
 
 function ErrorToast({ mensagem, onFechar }) {
   useEffect(() => {
-    const timer = setTimeout(onFechar, 6000); // Fechar após 6s
+    const timer = setTimeout(() => {
+      onFechar();
+    }, 4000);
     return () => clearTimeout(timer);
-  }, [onFechar]);
+  }, []);
 
   return (
-    <div className="fixed top-4 right-4 bg-red-50 border-2 border-red-300 rounded-lg p-4 max-w-md shadow-lg z-50 animate-slide-in">
+    <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-50 border-2 border-red-300 rounded-lg p-4 max-w-md shadow-lg z-50">
       <div className="flex items-start gap-3">
         <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
         <div className="flex-1">

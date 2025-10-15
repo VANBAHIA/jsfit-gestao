@@ -1,25 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Search, Loader, Trash2, Plus, CheckCircle, XCircle, AlertCircle, X } from 'lucide-react';
+import { FileText, Search, Loader, Trash2, Plus, CheckCircle, XCircle, AlertCircle, X, DollarSign } from 'lucide-react';
 import { matriculasService } from '../../../services/api/matriculasService';
 import MatriculaWizard from './MatriculaWizard';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
+import { jobsService } from '../../../services/api/jobsService';
+
 
 function Matriculas() {
   // Estados de dados
   const [matriculas, setMatriculas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
-  
+
   // Estados de UI
   const [mostrarWizard, setMostrarWizard] = useState(false);
   const [busca, setBusca] = useState('');
   const [erroToast, setErroToast] = useState(null);
-  
+  // Estados para geração de cobranças
+  const [gerandoCobrancas, setGerandoCobrancas] = useState(false);
+  const [resultadoCobrancas, setResultadoCobrancas] = useState(null);
+
   // Estados de confirmação
-  const [confirmDialog, setConfirmDialog] = useState({ 
-    isOpen: false, 
-    matricula: null, 
-    acao: null 
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    matricula: null,
+    acao: null
   });
 
   // Carregar matrículas ao montar componente
@@ -34,10 +39,10 @@ function Matriculas() {
     try {
       setLoading(true);
       setErro(null);
-      
+
       const resposta = await matriculasService.listarTodos();
       const matriculasArray = resposta.data?.matriculas || [];
-      
+
       setMatriculas(matriculasArray);
     } catch (error) {
       const mensagem = error.response?.data?.mensagem || 'Erro ao carregar matrículas';
@@ -48,6 +53,72 @@ function Matriculas() {
     }
   };
 
+const handleGerarCobrancas = async () => {
+  try {
+    // Confirmar ação
+    const confirmar = window.confirm(
+      '🔄 Deseja gerar as cobranças mensais agora?\n\n' +
+      'Esta ação criará contas a receber para todas as matrículas ativas que estão com cobranças pendentes.'
+    );
+
+    if (!confirmar) return;
+
+    setGerandoCobrancas(true);
+    setResultadoCobrancas(null);
+
+    const resposta = await jobsService.gerarCobrancas();
+    
+    // ✅ CORRIGIDO: Acessar dados corretamente
+    const resultado = resposta.data || resposta;
+
+    // Exibir resultado
+    const mensagem = `
+✅ Cobranças geradas com sucesso!
+
+📊 Resumo:
+• Total processado: ${resultado.total || 0}
+• Criadas: ${resultado.geradas || 0}
+• Já existiam ou não se aplicam: ${resultado.jaExistiam || 0}
+• Erros: ${resultado.erros || 0}
+    `;
+
+    setResultadoCobrancas({
+      sucesso: true,
+      ...resultado
+    });
+
+    alert(mensagem);
+
+    // Recarregar lista de matrículas
+    await carregarMatriculas();
+
+  } catch (error) {
+    const mensagemErro = error.response?.data?.message
+      || error.response?.data?.mensagem
+      || error.message
+      || 'Erro desconhecido ao gerar cobranças';
+
+    console.error('❌ Erro na geração de cobranças:', error);
+
+    setResultadoCobrancas({
+      sucesso: false,
+      mensagem: mensagemErro
+      
+    });
+    setErroToast (mensagemErro);
+
+
+   
+
+  } finally {
+    setGerandoCobrancas(false);
+
+    // Limpar resultado após 5 segundos
+    setTimeout(() => {
+      setResultadoCobrancas(null);
+    }, 5000);
+  }
+};
   /**
    * Abre o wizard para criar nova matrícula
    */
@@ -71,11 +142,11 @@ function Matriculas() {
       setErroToast('Erro: Matrícula inválida');
       return;
     }
-    
-    setConfirmDialog({ 
-      isOpen: true, 
-      matricula, 
-      acao 
+
+    setConfirmDialog({
+      isOpen: true,
+      matricula,
+      acao
     });
   };
 
@@ -84,7 +155,7 @@ function Matriculas() {
    */
   const handleExecutarAcao = async () => {
     const { matricula, acao } = confirmDialog;
-    
+
     try {
       if (!matricula?.id) {
         throw new Error('ID da matrícula não encontrado');
@@ -95,34 +166,34 @@ function Matriculas() {
       if (acao === 'excluir') {
         await matriculasService.excluir(matricula.id);
         console.log('✅ Matrícula excluída com sucesso');
-        
+
       } else if (acao === 'inativar') {
         await matriculasService.inativar(matricula.id, 'Inativada pelo usuário');
         console.log('✅ Matrícula inativada com sucesso');
-        
+
       } else if (acao === 'reativar') {
         await matriculasService.reativar(matricula.id);
         console.log('✅ Matrícula reativada com sucesso');
       }
-      
+
       // Fechar dialog e recarregar lista
       setConfirmDialog({ isOpen: false, matricula: null, acao: null });
       await carregarMatriculas();
-      
+
     } catch (error) {
       // ✅ Capturar mensagem da API
-      const mensagemErro = error.response?.data?.mensagem 
-        || error.response?.data?.message 
-        || error.message 
+      const mensagemErro = error.response?.data?.mensagem
+        || error.response?.data?.message
+        || error.message
         || 'Erro desconhecido';
-      
+
       console.error('❌ Erro ao executar ação:', {
         acao: confirmDialog.acao,
         matriculaId: confirmDialog.matricula?.id,
         mensagem: mensagemErro,
         detalhes: error.response?.data
       });
-      
+
       setErroToast(mensagemErro);
     }
   };
@@ -133,7 +204,7 @@ function Matriculas() {
   const obterMensagemConfirmacao = () => {
     const { matricula, acao } = confirmDialog;
     const nomeAluno = matricula?.aluno?.pessoa?.nome1 || 'Desconhecido';
-    
+
     switch (acao) {
       case 'excluir':
         return `Tem certeza que deseja excluir a matrícula do aluno ${nomeAluno}? Esta ação não pode ser desfeita.`;
@@ -169,14 +240,14 @@ function Matriculas() {
    */
   const matriculasFiltradas = matriculas.filter(matricula => {
     if (!busca) return true;
-    
+
     const termoBusca = busca.toLowerCase();
     const nomeAluno = matricula.aluno?.pessoa?.nome1?.toLowerCase() || '';
     const cpfAluno = matricula.aluno?.pessoa?.doc1 || '';
     const nomePlano = matricula.plano?.nome?.toLowerCase() || '';
-    
-    return nomeAluno.includes(termoBusca) 
-      || cpfAluno.includes(termoBusca) 
+
+    return nomeAluno.includes(termoBusca)
+      || cpfAluno.includes(termoBusca)
       || nomePlano.includes(termoBusca);
   });
 
@@ -190,7 +261,7 @@ function Matriculas() {
       'CANCELADA': { bg: 'bg-gray-100', text: 'text-gray-800' },
       'SUSPENSA': { bg: 'bg-yellow-100', text: 'text-yellow-800' }
     };
-    
+
     const badge = badges[situacao] || badges['CANCELADA'];
     return badge;
   };
@@ -208,7 +279,8 @@ function Matriculas() {
     <div className="p-6">
       {/* Card Principal */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        
+
+        {/* Header */}
         {/* Header */}
         <div className="p-6 border-b flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -222,21 +294,45 @@ function Matriculas() {
               </p>
             </div>
           </div>
-          <button 
-            onClick={handleNovaMatricula}
-            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 font-semibold shadow-md transition-colors"
-          >
-            <Plus size={20} />
-            Nova Matrícula
-          </button>
+
+          <div className="flex items-center gap-3">
+            {/* 🆕 Botão Gerar Cobranças */}
+            <button
+              onClick={handleGerarCobrancas}
+              disabled={gerandoCobrancas}
+              className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 font-semibold shadow-md transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              title="Gerar cobranças mensais manualmente"
+            >
+              {gerandoCobrancas ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                  Gerando...
+                </>
+              ) : (
+                <>
+                  <DollarSign size={20} />
+                  Gerar Cobranças
+                </>
+              )}
+            </button>
+
+            {/* Botão Nova Matrícula (já existente) */}
+            <button
+              onClick={handleNovaMatricula}
+              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 font-semibold shadow-md transition-colors"
+            >
+              <Plus size={20} />
+              Nova Matrícula
+            </button>
+          </div>
         </div>
 
         {/* Busca */}
         <div className="p-6 border-b">
           <div className="relative">
-            <Search 
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" 
-              size={20} 
+            <Search
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
             />
             <input
               type="text"
@@ -290,7 +386,7 @@ function Matriculas() {
             <tbody className="divide-y divide-gray-200">
               {matriculasFiltradas.map((matricula) => {
                 const badgeSituacao = obterBadgeSituacao(matricula.situacao);
-                
+
                 return (
                   <tr key={matricula.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
@@ -330,25 +426,25 @@ function Matriculas() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
                         {matricula.situacao === 'ATIVA' ? (
-                          <button 
+                          <button
                             onClick={() => handleConfirmarAcao(matricula, 'inativar')}
-                            className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors" 
+                            className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"
                             title="Inativar matrícula"
                           >
                             <XCircle size={18} />
                           </button>
                         ) : (
-                          <button 
+                          <button
                             onClick={() => handleConfirmarAcao(matricula, 'reativar')}
-                            className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors" 
+                            className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
                             title="Reativar matrícula"
                           >
                             <CheckCircle size={18} />
                           </button>
                         )}
-                        <button 
+                        <button
                           onClick={() => handleConfirmarAcao(matricula, 'excluir')}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors" 
+                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                           title="Excluir matrícula"
                         >
                           <Trash2 size={18} />
@@ -403,13 +499,12 @@ function Matriculas() {
       {/* Dialog de confirmação */}
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
-        titulo={`Confirmar ${
-          confirmDialog.acao === 'excluir' 
-            ? 'Exclusão' 
-            : confirmDialog.acao === 'inativar' 
-            ? 'Inativação' 
-            : 'Reativação'
-        }`}
+        titulo={`Confirmar ${confirmDialog.acao === 'excluir'
+            ? 'Exclusão'
+            : confirmDialog.acao === 'inativar'
+              ? 'Inativação'
+              : 'Reativação'
+          }`}
         mensagem={obterMensagemConfirmacao()}
         onConfirmar={handleExecutarAcao}
         onCancelar={() => setConfirmDialog({ isOpen: false, matricula: null, acao: null })}

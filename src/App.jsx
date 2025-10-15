@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+// src/App.jsx - Com Sistema de Permissões Integrado
+
+import React, { useState, useMemo } from 'react';
 import { X, ChevronDown, ChevronRight, Clock, LogOut, User as UserIcon, Shield } from 'lucide-react';
-import { menuConfig } from './config/menuConfig';
+import { menuConfig, filtrarMenusPorPermissao } from './config/menuConfig';
 import { useClock } from './hooks/useClock';
 import { useTabs } from './hooks/useTabs';
 import { useAuth } from './context/AuthContext';
+import { usePermissoes } from './hooks/usePermissoes';
 import LoginPage from './components/auth/LoginPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import ConfirmDialog from './components/common/ConfirmDialog';
 
 // Importação dos componentes de páginas
 import Alunos from './pages/Controle/Alunos/Alunos';
@@ -25,19 +29,23 @@ import Visitantes from './pages/Controle/Visitantes/Visitantes';
 import Frequencia from './pages/Controle/Frequencia/Frequencia';
 import FrequenciaRelatorio from './pages/Controle/Frequencia/FrequenciaRelatorio';
 import Licencas from './pages/Configuracoes/Licencas/Licencas';
-import { Key } from 'lucide-react';
-
-
-
 
 function App() {
-
   const { autenticado, loading, usuario, logout } = useAuth();
+  const { temPermissao, podeAcessarModulo } = usePermissoes();
+  const [mostrarDialogoSair, setMostrarDialogoSair] = useState(false); 
   const [openMenus, setOpenMenus] = useState({});
   const [openSubmenus, setOpenSubmenus] = useState({});
   const [mostrarMenuUsuario, setMostrarMenuUsuario] = useState(false);
+  
   const { date, time, dayOfWeek } = useClock();
   const { activeTab, openTabs, openTab, closeTab, setActiveTab } = useTabs();
+
+  // ✅ FILTRAR MENUS BASEADO NAS PERMISSÕES DO USUÁRIO
+  const menusFiltrados = useMemo(() => {
+    if (!autenticado) return [];
+    return filtrarMenusPorPermissao(menuConfig, temPermissao);
+  }, [autenticado, temPermissao]);
 
   // Se está carregando, mostra loading
   if (loading) {
@@ -59,11 +67,9 @@ function App() {
   // Funções do sistema
   const toggleMenu = (menuId) => {
     setOpenMenus(prev => {
-      // Se o menu já está aberto, fecha ele
       if (prev[menuId]) {
         return { ...prev, [menuId]: false };
       }
-      // Se não, fecha todos e abre apenas o clicado
       return { [menuId]: true };
     });
   };
@@ -79,6 +85,15 @@ function App() {
   };
 
   const handleSubmenuClick = (menu, submenu) => {
+    // ✅ VERIFICAR PERMISSÃO ANTES DE ABRIR ABA
+    if (submenu.permissao) {
+      const { modulo, acao } = submenu.permissao;
+      if (!temPermissao(modulo, acao)) {
+        alert(`Você não tem permissão para acessar ${submenu.label}`);
+        return;
+      }
+    }
+
     setOpenSubmenus({});
     openTab({
       menuId: menu.id,
@@ -90,25 +105,21 @@ function App() {
     toggleMenu(menu.id);
   };
 
-  const handleLogout = () => {
-    if (confirm('Deseja realmente sair do sistema?')) {
-      logout();
-    }
+ const handleLogout = () => {
+    setMostrarDialogoSair(true);
   };
 
   const renderTabContent = (tab) => {
-    if (!tab) {
-      // ... código existente
-    }
+    if (!tab) return null;
 
-
-    if (tab.submenuId === 'licencas' && usuario?.perfil !== 'SUPER_ADMIN') {
+    // ✅ PROTEÇÃO ESPECIAL PARA LICENÇAS
+    if (tab.submenuId === 'licencas' && usuario?.perfil !== 'ADMIN') {
       return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center p-8 bg-white rounded-lg shadow-lg">
             <div className="text-6xl mb-4">🔒</div>
             <h2 className="text-xl font-bold text-gray-800 mb-2">Acesso Negado</h2>
-            <p className="text-gray-600">Apenas SUPER_ADMIN pode acessar este módulo.</p>
+            <p className="text-gray-600">Apenas ADMIN pode acessar este módulo.</p>
           </div>
         </div>
       );
@@ -158,7 +169,6 @@ function App() {
               </h3>
               <p className="text-blue-800 text-sm leading-relaxed">
                 Este módulo está preparado para receber as funcionalidades de <strong>{tab.label}</strong>.
-                A estrutura de pastas e componentes já está criada seguindo as boas práticas.
               </p>
             </div>
 
@@ -173,28 +183,8 @@ function App() {
                   <span className="text-green-600 font-bold">✓</span>
                   <span>Tabelas com paginação e filtros</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 font-bold">✓</span>
-                  <span>Validação de dados em tempo real</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 font-bold">✓</span>
-                  <span>Exportação para Excel e PDF</span>
-                </li>
               </ul>
             </div>
-          </div>
-
-          <div className="mt-6 flex gap-3">
-            <button className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm">
-              ➕ Novo Cadastro
-            </button>
-            <button className="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium">
-              🔍 Pesquisar
-            </button>
-            <button className="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium">
-              📊 Relatórios
-            </button>
           </div>
         </div>
       </div>
@@ -265,7 +255,6 @@ function App() {
                   />
                 </button>
 
-                {/* Dropdown Menu Usuário */}
                 {mostrarMenuUsuario && (
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                     <div className="p-4 border-b bg-gray-50">
@@ -279,7 +268,6 @@ function App() {
                       <button
                         onClick={() => {
                           setMostrarMenuUsuario(false);
-                          // Abrir configurações de perfil
                         }}
                         className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg text-gray-700 flex items-center gap-2"
                       >
@@ -304,10 +292,10 @@ function App() {
           </div>
         </header>
 
-        {/* Barra de Menu Horizontal */}
+        {/* Barra de Menu Horizontal - ✅ USANDO MENUS FILTRADOS */}
         <nav className="bg-white border-b shadow-sm">
           <div className="flex items-center px-6 py-2">
-            {menuConfig.map((menu) => {
+            {menusFiltrados.map((menu) => {
               const MenuIcon = menu.icon;
               return (
                 <div key={menu.id} className="relative">
@@ -397,10 +385,11 @@ function App() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-200 transition-all whitespace-nowrap ${activeTab === tab.id
+                    className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-200 transition-all whitespace-nowrap ${
+                      activeTab === tab.id
                         ? 'bg-white text-blue-600 font-semibold border-t-2 border-t-blue-600 -mt-[2px]'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
+                    }`}
                   >
                     <TabIcon size={16} />
                     <span className="text-sm">{tab.label}</span>
@@ -445,26 +434,49 @@ function App() {
                 <p className="text-gray-600 mb-2">
                   Olá, <strong>{usuario?.nome}</strong>!
                 </p>
-                <p className="text-gray-500 mb-6 text-sm">
-                  Selecione um módulo no menu acima para começar a gerenciar sua academia
+                <p className="text-sm text-gray-500 mb-2">
+                  Perfil: <strong className="text-blue-600">{usuario?.perfil}</strong>
                 </p>
+                <p className="text-gray-500 mb-6 text-sm">
+                  Selecione um módulo no menu acima para começar
+                </p>
+                
+                {/* Cards de Acesso Rápido - Baseado em Permissões */}
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="p-3 bg-white rounded-lg border border-gray-200">
-                    <div className="font-semibold text-blue-600 mb-1">📊 Dashboard</div>
-                    <div className="text-gray-600">Visão geral</div>
-                  </div>
-                  <div className="p-3 bg-white rounded-lg border border-gray-200">
-                    <div className="font-semibold text-green-600 mb-1">👥 Alunos</div>
-                    <div className="text-gray-600">Gestão completa</div>
-                  </div>
-                  <div className="p-3 bg-white rounded-lg border border-gray-200">
-                    <div className="font-semibold text-purple-600 mb-1">💰 Financeiro</div>
-                    <div className="text-gray-600">Controle total</div>
-                  </div>
-                  <div className="p-3 bg-white rounded-lg border border-gray-200">
-                    <div className="font-semibold text-orange-600 mb-1">📈 Relatórios</div>
-                    <div className="text-gray-600">Análises</div>
-                  </div>
+                  {podeAcessarModulo('alunos') && (
+                    <div className="p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="font-semibold text-green-600 mb-1">👥 Alunos</div>
+                      <div className="text-gray-600">Gestão completa</div>
+                    </div>
+                  )}
+                  
+                  {podeAcessarModulo('matriculas') && (
+                    <div className="p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="font-semibold text-blue-600 mb-1">📋 Matrículas</div>
+                      <div className="text-gray-600">Cadastros</div>
+                    </div>
+                  )}
+                  
+                  {podeAcessarModulo('caixa') && (
+                    <div className="p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="font-semibold text-purple-600 mb-1">💰 Caixa</div>
+                      <div className="text-gray-600">Controle</div>
+                    </div>
+                  )}
+                  
+                  {podeAcessarModulo('relatorioFinanceiro') && (
+                    <div className="p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="font-semibold text-orange-600 mb-1">📈 Relatórios</div>
+                      <div className="text-gray-600">Análises</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Informação sobre Permissões */}
+                <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-xs text-blue-800">
+                    <strong>💡 Dica:</strong> Você só visualiza os módulos que seu perfil tem permissão para acessar.
+                  </p>
                 </div>
               </div>
             </div>
@@ -491,6 +503,19 @@ function App() {
           </div>
         </footer>
       </div>
+      <ConfirmDialog
+        isOpen={mostrarDialogoSair}
+        titulo="Sair do Sistema"
+        mensagem="Deseja realmente sair do sistema?"
+        textoBotaoConfirmar="Sair"
+        textoBotaoCancelar="Cancelar"
+        tipo="warning"
+        onConfirmar={() => {
+          setMostrarDialogoSair(false);
+          logout();
+        }}
+        onCancelar={() => setMostrarDialogoSair(false)}
+      />
     </ProtectedRoute>
   );
 }

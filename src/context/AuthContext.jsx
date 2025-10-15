@@ -77,9 +77,16 @@ export const AuthProvider = ({ children }) => {
       const resposta = await authService.login(credenciais);
       
       if (resposta.success) {
-        setUsuario(resposta.data.usuario);
+        // ✅ Recupera o usuário salvo no sessionStorage (que foi salvo pelo authService)
+        const usuarioLogado = authService.getUsuarioLogado();
+        
+        console.log('✅ Login bem-sucedido:', usuarioLogado?.nome);
+        console.log('👤 Usuário com perfil:', usuarioLogado?.perfil);
+        
+        // ✅ Salva o objeto completo do usuário no contexto
+        setUsuario(usuarioLogado);
         setAutenticado(true);
-        console.log('✅ Login bem-sucedido:', resposta.data.usuario.nome);
+        
         return { success: true };
       }
       
@@ -161,4 +168,4 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthContext;
+export { AuthContext };
