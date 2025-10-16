@@ -11,6 +11,7 @@ import LoginPage from './components/auth/LoginPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ConfirmDialog from './components/common/ConfirmDialog';
 
+
 // Importação dos componentes de páginas
 import Alunos from './pages/Controle/Alunos/Alunos';
 import Funcionarios from './pages/Controle/Funcionarios/Funcionarios';
@@ -29,15 +30,18 @@ import Visitantes from './pages/Controle/Visitantes/Visitantes';
 import Frequencia from './pages/Controle/Frequencia/Frequencia';
 import FrequenciaRelatorio from './pages/Controle/Frequencia/FrequenciaRelatorio';
 import Licencas from './pages/Configuracoes/Licencas/Licencas';
+import RelatorioFinanceiro from './pages/Relatorios/RelatorioFinanceiro/RelatorioFinanceiro';
+
+
 
 function App() {
   const { autenticado, loading, usuario, logout } = useAuth();
   const { temPermissao, podeAcessarModulo } = usePermissoes();
-  const [mostrarDialogoSair, setMostrarDialogoSair] = useState(false); 
+  const [mostrarDialogoSair, setMostrarDialogoSair] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
   const [openSubmenus, setOpenSubmenus] = useState({});
   const [mostrarMenuUsuario, setMostrarMenuUsuario] = useState(false);
-  
+
   const { date, time, dayOfWeek } = useClock();
   const { activeTab, openTabs, openTab, closeTab, setActiveTab } = useTabs();
 
@@ -47,6 +51,8 @@ function App() {
     return filtrarMenusPorPermissao(menuConfig, temPermissao);
   }, [autenticado, temPermissao]);
 
+
+  
   // Se está carregando, mostra loading
   if (loading) {
     return (
@@ -105,7 +111,7 @@ function App() {
     toggleMenu(menu.id);
   };
 
- const handleLogout = () => {
+  const handleLogout = () => {
     setMostrarDialogoSair(true);
   };
 
@@ -113,13 +119,13 @@ function App() {
     if (!tab) return null;
 
     // ✅ PROTEÇÃO ESPECIAL PARA LICENÇAS
-    if (tab.submenuId === 'licencas' && usuario?.perfil !== 'ADMIN') {
+    if (tab.submenuId === 'licencas' && usuario?.perfil !== 'SUPER_ADMIN') {
       return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center p-8 bg-white rounded-lg shadow-lg">
             <div className="text-6xl mb-4">🔒</div>
             <h2 className="text-xl font-bold text-gray-800 mb-2">Acesso Negado</h2>
-            <p className="text-gray-600">Apenas ADMIN pode acessar este módulo.</p>
+            <p className="text-gray-600">Apenas o Suporte Técnico pode acessar este módulo.</p>
           </div>
         </div>
       );
@@ -145,7 +151,8 @@ function App() {
       'dados-academia': <Empresa />,
       'usuarios': <Usuarios />,
       'licencas': <Licencas />,
-      'frequencia-relatorio': <FrequenciaRelatorio />
+      'frequencia-relatorio': <FrequenciaRelatorio />,
+      'financeiro-relatorio': <RelatorioFinanceiro />
     };
 
     // Retorna o componente específico ou o padrão
@@ -385,11 +392,10 @@ function App() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-200 transition-all whitespace-nowrap ${
-                      activeTab === tab.id
+                    className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-200 transition-all whitespace-nowrap ${activeTab === tab.id
                         ? 'bg-white text-blue-600 font-semibold border-t-2 border-t-blue-600 -mt-[2px]'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
+                      }`}
                   >
                     <TabIcon size={16} />
                     <span className="text-sm">{tab.label}</span>
@@ -440,42 +446,79 @@ function App() {
                 <p className="text-gray-500 mb-6 text-sm">
                   Selecione um módulo no menu acima para começar
                 </p>
-                
+
                 {/* Cards de Acesso Rápido - Baseado em Permissões */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-3 gap-4 text-sm">
+                  {/* PESSOAS */}
                   {podeAcessarModulo('alunos') && (
-                    <div className="p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-                      <div className="font-semibold text-green-600 mb-1">👥 Alunos</div>
-                      <div className="text-gray-600">Gestão completa</div>
+                    <div className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" title="Clique para acessar Alunos">
+                      <div className="font-semibold text-blue-600 mb-1">👥 Alunos</div>
+                      <div className="text-gray-600 text-xs">Gestão de pessoas</div>
                     </div>
                   )}
-                  
+
+                  {/* OPERACIONAL */}
                   {podeAcessarModulo('matriculas') && (
-                    <div className="p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-                      <div className="font-semibold text-blue-600 mb-1">📋 Matrículas</div>
-                      <div className="text-gray-600">Cadastros</div>
+                    <div className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" title="Clique para acessar Matrículas">
+                      <div className="font-semibold text-cyan-600 mb-1">📋 Matrículas</div>
+                      <div className="text-gray-600 text-xs">Operações diárias</div>
                     </div>
                   )}
-                  
-                  {podeAcessarModulo('caixa') && (
-                    <div className="p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-                      <div className="font-semibold text-purple-600 mb-1">💰 Caixa</div>
-                      <div className="text-gray-600">Controle</div>
+
+                  {/* CADASTROS & REFERÊNCIA */}
+                  {podeAcessarModulo('planos') && (
+                    <div className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" title="Clique para acessar Planos">
+                      <div className="font-semibold text-purple-600 mb-1">📁 Planos</div>
+                      <div className="text-gray-600 text-xs">Cadastros & Referência</div>
                     </div>
                   )}
-                  
-                  {podeAcessarModulo('relatorioFinanceiro') && (
-                    <div className="p-3 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-                      <div className="font-semibold text-orange-600 mb-1">📈 Relatórios</div>
-                      <div className="text-gray-600">Análises</div>
+
+                  {/* FINANCEIRO */}
+                  {podeAcessarModulo('mensalidades') && (
+                    <div className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" title="Clique para acessar Mensalidades">
+                      <div className="font-semibold text-rose-600 mb-1">💰 Mensalidades</div>
+                      <div className="text-gray-600 text-xs">Gestão financeira</div>
+                    </div>
+                  )}
+
+                  {/* RELATÓRIOS - Frequência */}
+                  {podeAcessarModulo('relatorioFrequencia') && (
+                    <div className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" title="Clique para acessar Relatório de Frequência">
+                      <div className="font-semibold text-amber-600 mb-1">📅 Frequência</div>
+                      <div className="text-gray-600 text-xs">Relatórios & Analytics</div>
+                    </div>
+                  )}
+
+                  {/* RELATÓRIOS - Inadimplência (NOVO) */}
+                  {podeAcessarModulo('relatorioInadimplencia') && (
+                    <div className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" title="Clique para acessar Inadimplência">
+                      <div className="font-semibold text-red-600 mb-1">⚠️ Inadimplência</div>
+                      <div className="text-gray-600 text-xs">Análise de débitos</div>
+                    </div>
+                  )}
+
+                  {/* RELATÓRIOS - Desempenho (NOVO) */}
+                  {podeAcessarModulo('relatorioDesempenho') && (
+                    <div className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" title="Clique para acessar Desempenho">
+                      <div className="font-semibold text-teal-600 mb-1">📊 Desempenho</div>
+                      <div className="text-gray-600 text-xs">Métricas operacionais</div>
+                    </div>
+                  )}
+
+                  {/* RELATÓRIOS - Gerencial (NOVO) */}
+                  {podeAcessarModulo('relatorioGerencial') && (
+                    <div className="p-4 bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer" title="Clique para acessar Relatórios Gerenciais">
+                      <div className="font-semibold text-indigo-600 mb-1">📈 Gerencial</div>
+                      <div className="text-gray-600 text-xs">Relatórios executivos</div>
                     </div>
                   )}
                 </div>
 
-                {/* Informação sobre Permissões */}
+                {/* Informação sobre Permissões - Atualizada */}
                 <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-xs text-blue-800">
-                    <strong>💡 Dica:</strong> Você só visualiza os módulos que seu perfil tem permissão para acessar.
+                  <p className="text-xs text-blue-800 leading-relaxed">
+                    <strong>💡 Dica:</strong> A tela mostra apenas os módulos disponíveis para seu perfil.
+                    O sistema está organizado em <strong>6 seções principais: Pessoas, Operacional, Cadastros, Financeiro, Relatórios e Configurações</strong>.
                   </p>
                 </div>
               </div>

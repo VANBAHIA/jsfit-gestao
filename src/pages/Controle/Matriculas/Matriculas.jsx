@@ -4,6 +4,9 @@ import { matriculasService } from '../../../services/api/matriculasService';
 import MatriculaWizard from './MatriculaWizard';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
 import { jobsService } from '../../../services/api/jobsService';
+import { usePermissoes } from '../../../hooks/usePermissoes';
+import BotaoPermissao from '../../../components/common/BotaoPermissao';
+
 
 
 function Matriculas() {
@@ -11,6 +14,8 @@ function Matriculas() {
   const [matriculas, setMatriculas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
+  const { temPermissao } = usePermissoes();
+
 
   // Estados de UI
   const [mostrarWizard, setMostrarWizard] = useState(false);
@@ -53,26 +58,26 @@ function Matriculas() {
     }
   };
 
-const handleGerarCobrancas = async () => {
-  try {
-    // Confirmar ação
-    const confirmar = window.confirm(
-      '🔄 Deseja gerar as cobranças mensais agora?\n\n' +
-      'Esta ação criará contas a receber para todas as matrículas ativas que estão com cobranças pendentes.'
-    );
+  const handleGerarCobrancas = async () => {
+    try {
+      // Confirmar ação
+      const confirmar = window.confirm(
+        '🔄 Deseja gerar as cobranças mensais agora?\n\n' +
+        'Esta ação criará contas a receber para todas as matrículas ativas que estão com cobranças pendentes.'
+      );
 
-    if (!confirmar) return;
+      if (!confirmar) return;
 
-    setGerandoCobrancas(true);
-    setResultadoCobrancas(null);
+      setGerandoCobrancas(true);
+      setResultadoCobrancas(null);
 
-    const resposta = await jobsService.gerarCobrancas();
-    
-    // ✅ CORRIGIDO: Acessar dados corretamente
-    const resultado = resposta.data || resposta;
+      const resposta = await jobsService.gerarCobrancas();
 
-    // Exibir resultado
-    const mensagem = `
+      // ✅ CORRIGIDO: Acessar dados corretamente
+      const resultado = resposta.data || resposta;
+
+      // Exibir resultado
+      const mensagem = `
 ✅ Cobranças geradas com sucesso!
 
 📊 Resumo:
@@ -82,43 +87,43 @@ const handleGerarCobrancas = async () => {
 • Erros: ${resultado.erros || 0}
     `;
 
-    setResultadoCobrancas({
-      sucesso: true,
-      ...resultado
-    });
+      setResultadoCobrancas({
+        sucesso: true,
+        ...resultado
+      });
 
-    alert(mensagem);
+      alert(mensagem);
 
-    // Recarregar lista de matrículas
-    await carregarMatriculas();
+      // Recarregar lista de matrículas
+      await carregarMatriculas();
 
-  } catch (error) {
-    const mensagemErro = error.response?.data?.message
-      || error.response?.data?.mensagem
-      || error.message
-      || 'Erro desconhecido ao gerar cobranças';
+    } catch (error) {
+      const mensagemErro = error.response?.data?.message
+        || error.response?.data?.mensagem
+        || error.message
+        || 'Erro desconhecido ao gerar cobranças';
 
-    console.error('❌ Erro na geração de cobranças:', error);
+      console.error('❌ Erro na geração de cobranças:', error);
 
-    setResultadoCobrancas({
-      sucesso: false,
-      mensagem: mensagemErro
-      
-    });
-    setErroToast (mensagemErro);
+      setResultadoCobrancas({
+        sucesso: false,
+        mensagem: mensagemErro
+
+      });
+      setErroToast(mensagemErro);
 
 
-   
 
-  } finally {
-    setGerandoCobrancas(false);
 
-    // Limpar resultado após 5 segundos
-    setTimeout(() => {
-      setResultadoCobrancas(null);
-    }, 5000);
-  }
-};
+    } finally {
+      setGerandoCobrancas(false);
+
+      // Limpar resultado após 5 segundos
+      setTimeout(() => {
+        setResultadoCobrancas(null);
+      }, 5000);
+    }
+  };
   /**
    * Abre o wizard para criar nova matrícula
    */
@@ -297,7 +302,10 @@ const handleGerarCobrancas = async () => {
 
           <div className="flex items-center gap-3">
             {/* 🆕 Botão Gerar Cobranças */}
-            <button
+            <BotaoPermissao
+              modulo="matriculas"
+              acao="gerarCobr"
+
               onClick={handleGerarCobrancas}
               disabled={gerandoCobrancas}
               className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 font-semibold shadow-md transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
@@ -314,16 +322,19 @@ const handleGerarCobrancas = async () => {
                   Gerar Cobranças
                 </>
               )}
-            </button>
+            </BotaoPermissao>
 
             {/* Botão Nova Matrícula (já existente) */}
-            <button
+            <BotaoPermissao
+              modulo="matriculas"
+              acao="criar"
+
               onClick={handleNovaMatricula}
               className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2 font-semibold shadow-md transition-colors"
             >
               <Plus size={20} />
               Nova Matrícula
-            </button>
+            </BotaoPermissao>
           </div>
         </div>
 
@@ -426,29 +437,37 @@ const handleGerarCobrancas = async () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
                         {matricula.situacao === 'ATIVA' ? (
-                          <button
+                          <BotaoPermissao
+                            modulo="matriculas"
+                            acao="inativar"
+
                             onClick={() => handleConfirmarAcao(matricula, 'inativar')}
                             className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors"
                             title="Inativar matrícula"
                           >
                             <XCircle size={18} />
-                          </button>
+                          </BotaoPermissao>
                         ) : (
-                          <button
+                          <BotaoPermissao
+                            modulo="matriculas"
+                            acao="reativar"
+
                             onClick={() => handleConfirmarAcao(matricula, 'reativar')}
                             className="p-2 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
                             title="Reativar matrícula"
                           >
                             <CheckCircle size={18} />
-                          </button>
+                          </BotaoPermissao>
                         )}
-                        <button
+                        <BotaoPermissao
+                          modulo="matriculas"
+                          acao="excluir"
                           onClick={() => handleConfirmarAcao(matricula, 'excluir')}
                           className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                           title="Excluir matrícula"
                         >
                           <Trash2 size={18} />
-                        </button>
+                        </BotaoPermissao>
                       </div>
                     </td>
                   </tr>
@@ -500,10 +519,10 @@ const handleGerarCobrancas = async () => {
       <ConfirmDialog
         isOpen={confirmDialog.isOpen}
         titulo={`Confirmar ${confirmDialog.acao === 'excluir'
-            ? 'Exclusão'
-            : confirmDialog.acao === 'inativar'
-              ? 'Inativação'
-              : 'Reativação'
+          ? 'Exclusão'
+          : confirmDialog.acao === 'inativar'
+            ? 'Inativação'
+            : 'Reativação'
           }`}
         mensagem={obterMensagemConfirmacao()}
         onConfirmar={handleExecutarAcao}

@@ -3,6 +3,10 @@ import { Users, Search, Loader, Edit, Trash2, Plus, Filter, X } from 'lucide-rea
 import { turmasService } from '../../../services/api/turmasService';
 import TurmaForm from './TurmaForm';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
+import { usePermissoes } from '../../../hooks/usePermissoes';
+import BotaoPermissao from '../../../components/common/BotaoPermissao';
+
+
 
 function Turmas() {
   const [turmas, setTurmas] = useState([]);
@@ -12,6 +16,8 @@ function Turmas() {
   const [turmaSelecionada, setTurmaSelecionada] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, turma: null });
   const [salvando, setSalvando] = useState(false);
+  const { temPermissao } = usePermissoes();
+
 
   const [filtros, setFiltros] = useState({
     busca: '',
@@ -27,10 +33,10 @@ function Turmas() {
     try {
       setLoading(true);
       const resposta = await turmasService.listarTodos();
-      
+
       const turmasData = resposta.data?.data || resposta.data || {};
       const turmasArray = turmasData.turmas || [];
-      
+
       setTurmas(turmasArray);
       setErro(null);
     } catch (error) {
@@ -139,11 +145,14 @@ function Turmas() {
               <p className="text-sm text-gray-600">Total: {turmasFiltradas.length} turmas cadastradas</p>
             </div>
           </div>
-          <button onClick={handleNovaTurma}
+          <BotaoPermissao
+            modulo="turmas"
+            acao="criar"
+            onClick={handleNovaTurma}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-semibold shadow-md">
             <Plus size={20} />
             Nova Turma
-          </button>
+          </BotaoPermissao>
         </div>
 
         {/* Filtros */}
@@ -250,26 +259,31 @@ function Turmas() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                      turma.status === 'ATIVO'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${turma.status === 'ATIVO'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                      }`}>
                       {turma.status}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      <button onClick={() => handleEditarTurma(turma)}
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" 
+                      <BotaoPermissao
+                        modulo="turmas"
+                        acao="Editar"
+                        onClick={() => handleEditarTurma(turma)}
+                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Editar turma">
                         <Edit size={18} />
-                      </button>
-                      <button onClick={() => handleConfirmarExclusao(turma)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors" 
+                      </BotaoPermissao>
+                      <BotaoPermissao
+                        modulo="turmas"
+                        acao="excluir"
+                        onClick={() => handleConfirmarExclusao(turma)}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                         title="Excluir turma">
                         <Trash2 size={18} />
-                      </button>
+                      </BotaoPermissao>
                     </div>
                   </td>
                 </tr>

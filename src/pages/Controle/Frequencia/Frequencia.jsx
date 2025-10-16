@@ -5,6 +5,8 @@ import { alunosService } from '../../../services/api/alunosService';
 import FrequenciaForm from './FrequenciaForm';
 import RegistroPresenca from './RegistroPresenca';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
+import { usePermissoes } from '../../../hooks/usePermissoes';
+import BotaoPermissao from '../../../components/common/BotaoPermissao';
 
 function Frequencia() {
   const [frequencias, setFrequencias] = useState([]);
@@ -15,6 +17,8 @@ function Frequencia() {
   const [mostrarRegistroRapido, setMostrarRegistroRapido] = useState(false);
   const [frequenciaSelecionada, setFrequenciaSelecionada] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, item: null });
+  
+  const { temPermissao } = usePermissoes();
 
   // Filtros
   const [filtros, setFiltros] = useState({
@@ -283,20 +287,28 @@ const carregarFrequencias = async () => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      <button
+                                            {/* ✅ BOTÃO EDITAR - Só aparece se tiver permissão */}
+                      <BotaoPermissao
+                        modulo="alunos"
+                        acao="editar"
                         onClick={() => handleEditarFrequencia(freq)}
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
-                        title="Editar"
+                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                        title="Editar aluno"
                       >
                         <Edit size={18} />
-                      </button>
-                      <button
+                      </BotaoPermissao>
+
+                      {/* ✅ BOTÃO EXCLUIR - Só aparece se tiver permissão */}
+                      <BotaoPermissao
+                        modulo="alunos"
+                        acao="excluir"
                         onClick={() => handleConfirmarExclusao(freq)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
-                        title="Excluir"
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                        title="Excluir aluno"
                       >
                         <Trash2 size={18} />
-                      </button>
+                      </BotaoPermissao>
+                     
                     </div>
                   </td>
                 </tr>

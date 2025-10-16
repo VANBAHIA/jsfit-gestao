@@ -20,12 +20,16 @@ import {
   FolderOpen,
   Percent,
   UserPlus,
-  Key
+  Key,
+  AlertCircle,
+  TrendingDown,
+  PieChart
 } from 'lucide-react';
 
 /**
  * Configuração da estrutura de menus do sistema com permissões integradas
  * Seguindo padrão de academias brasileiras
+ * VERSÃO MELHORADA: Organização em 6 seções principais para melhor intuitividade
  * Suporta 2 níveis: Menu > Submenu > Sub-submenu
  * 
  * Estrutura de Permissões:
@@ -33,18 +37,20 @@ import {
  * - Se não tiver permissão definida, o item é visível para todos
  */
 export const menuConfig = [
+  // ============================================
+  // 1. PESSOAS - Gerenciamento de pessoas
+  // ============================================
   {
-    id: 'controle',
-    label: 'Controle',
+    id: 'pessoas',
+    label: 'Pessoas',
     icon: Users,
-    // Menu pai sem permissão - visibilidade baseada nos submenus
+    descricao: 'Gerenciamento de alunos, funcionários e instrutores',
     submenus: [
-      // === PESSOAS ===
       {
         id: 'alunos',
         label: 'Alunos',
         icon: Users,
-        rota: '/controle/alunos',
+        rota: '/pessoas/alunos',
         descricao: 'Cadastro e controle de alunos',
         permissao: { modulo: 'alunos', acao: 'acessar' }
       },
@@ -52,15 +58,43 @@ export const menuConfig = [
         id: 'funcionarios',
         label: 'Funcionários',
         icon: UserCheck,
-        rota: '/controle/funcionarios',
+        rota: '/pessoas/funcionarios',
         descricao: 'Gestão de funcionários da academia',
         permissao: { modulo: 'funcionarios', acao: 'acessar' }
       },
       {
+        id: 'instrutores',
+        label: 'Instrutores',
+        icon: GraduationCap,
+        rota: '/pessoas/instrutores',
+        descricao: 'Gestão de instrutores e personal trainers',
+        permissao: { modulo: 'instrutores', acao: 'acessar' }
+      },
+      {
+        id: 'visitantes',
+        label: 'Visitantes',
+        icon: UserPlus,
+        rota: '/pessoas/visitantes',
+        descricao: 'Controle de visitantes da academia',
+        permissao: { modulo: 'visitantes', acao: 'acessar' }
+      }
+    ]
+  },
+
+  // ============================================
+  // 2. OPERACIONAL - Operações diárias
+  // ============================================
+  {
+    id: 'operacional',
+    label: 'Operacional',
+    icon: Briefcase,
+    descricao: 'Operações diárias e gerenciamento de turmas',
+    submenus: [
+      {
         id: 'matriculas',
         label: 'Matrículas',
         icon: FileText,
-        rota: '/controle/matriculas',
+        rota: '/operacional/matriculas',
         descricao: 'Gestão de matrículas de alunos',
         permissao: { modulo: 'matriculas', acao: 'acessar' }
       },
@@ -68,7 +102,7 @@ export const menuConfig = [
         id: 'turmas',
         label: 'Turmas',
         icon: Users,
-        rota: '/controle/turmas',
+        rota: '/operacional/turmas',
         descricao: 'Cadastro e gestão de turmas',
         permissao: { modulo: 'turmas', acao: 'acessar' }
       },
@@ -76,92 +110,81 @@ export const menuConfig = [
         id: 'frequencia',
         label: 'Frequência',
         icon: Calendar,
-        rota: '/controle/frequencia',
+        rota: '/operacional/frequencia',
         descricao: 'Controle de frequência dos alunos',
         permissao: { modulo: 'frequencia', acao: 'acessar' }
       },
       {
-        id: 'visitantes',
-        label: 'Visitantes',
-        icon: UserPlus,
-        rota: '/controle/visitantes',
-        descricao: 'Controle de visitantes da academia',
-        permissao: { modulo: 'visitantes', acao: 'acessar' }
-      },
-      {
-        id: 'instrutores',
-        label: 'Instrutores',
-        icon: GraduationCap,
-        rota: '/controle/instrutores',
-        descricao: 'Gestão de instrutores e personal trainers',
-        permissao: { modulo: 'instrutores', acao: 'acessar' }
-      },
-
-      // === CADASTROS AUXILIARES (SEGUNDO NÍVEL) ===
-      {
-        id: 'cadastros-auxiliares',
-        label: 'Cadastros Auxiliares',
-        icon: FolderOpen,
-        hasSubmenus: true,
-        // Submenu visível se tiver acesso a pelo menos um item interno
-        submenus: [
-          {
-            id: 'locais',
-            label: 'Locais',
-            icon: MapPin,
-            rota: '/cadastros/locais',
-            descricao: 'Cadastro de locais e espaços da academia',
-            permissao: { modulo: 'locais', acao: 'acessar' }
-          },
-          {
-            id: 'funcoes',
-            label: 'Funções',
-            icon: Briefcase,
-            rota: '/cadastros/funcoes',
-            descricao: 'Cadastro de funções e cargos',
-            permissao: { modulo: 'funcoes', acao: 'acessar' }
-          },
-          {
-            id: 'planos',
-            label: 'Planos',
-            icon: FileText,
-            rota: '/cadastros/planos',
-            descricao: 'Cadastro de planos e modalidades',
-            permissao: { modulo: 'planos', acao: 'acessar' }
-          },
-          {
-            id: 'descontos',
-            label: 'Descontos',
-            icon: Percent,
-            rota: '/cadastros/descontos',
-            descricao: 'Cadastro de descontos e promoções',
-            permissao: { modulo: 'descontos', acao: 'acessar' }
-          },
-          {
-            id: 'modalidades',
-            label: 'Modalidades',
-            icon: Dumbbell,
-            rota: '/cadastros/modalidades',
-            descricao: 'Tipos de atividades oferecidas',
-            permissao: { modulo: 'modalidades', acao: 'acessar' }
-          },
-          {
-            id: 'equipamentos',
-            label: 'Equipamentos',
-            icon: Wrench,
-            rota: '/cadastros/equipamentos',
-            descricao: 'Controle de equipamentos da academia',
-            permissao: { modulo: 'equipamentos', acao: 'acessar' }
-          }
-        ]
+        id: 'equipamentos',
+        label: 'Equipamentos',
+        icon: Wrench,
+        rota: '/operacional/equipamentos',
+        descricao: 'Controle de equipamentos da academia',
+        permissao: { modulo: 'equipamentos', acao: 'acessar' }
       }
     ]
   },
-  
+
+  // ============================================
+  // 3. CADASTROS & REFERÊNCIA - Dados configuráveis
+  // ============================================
+  {
+    id: 'cadastros',
+    label: 'Cadastros',
+    icon: FolderOpen,
+    descricao: 'Dados de referência e configurações operacionais',
+    submenus: [
+      {
+        id: 'planos',
+        label: 'Planos',
+        icon: FileText,
+        rota: '/cadastros/planos',
+        descricao: 'Cadastro de planos e modalidades',
+        permissao: { modulo: 'planos', acao: 'acessar' }
+      },
+      {
+        id: 'modalidades',
+        label: 'Modalidades',
+        icon: Dumbbell,
+        rota: '/cadastros/modalidades',
+        descricao: 'Tipos de atividades oferecidas',
+        permissao: { modulo: 'modalidades', acao: 'acessar' }
+      },
+      {
+        id: 'descontos',
+        label: 'Descontos & Promoções',
+        icon: Percent,
+        rota: '/cadastros/descontos',
+        descricao: 'Cadastro de descontos e promoções',
+        permissao: { modulo: 'descontos', acao: 'acessar' }
+      },
+      {
+        id: 'locais',
+        label: 'Locais',
+        icon: MapPin,
+        rota: '/cadastros/locais',
+        descricao: 'Cadastro de locais e espaços da academia',
+        permissao: { modulo: 'locais', acao: 'acessar' }
+      },
+      {
+        id: 'funcoes',
+        label: 'Funções & Cargos',
+        icon: Briefcase,
+        rota: '/cadastros/funcoes',
+        descricao: 'Cadastro de funções e cargos',
+        permissao: { modulo: 'funcoes', acao: 'acessar' }
+      }
+    ]
+  },
+
+  // ============================================
+  // 4. FINANCEIRO - Gestão financeira
+  // ============================================
   {
     id: 'financeiro',
     label: 'Financeiro',
     icon: DollarSign,
+    descricao: 'Controle financeiro e fluxo de caixa',
     submenus: [
       {
         id: 'mensalidades',
@@ -174,7 +197,7 @@ export const menuConfig = [
       {
         id: 'contas-receber',
         label: 'Contas a Receber',
-        icon: DollarSign,
+        icon: TrendingUp,
         rota: '/financeiro/contas-receber',
         descricao: 'Receitas e recebimentos',
         permissao: { modulo: 'contasReceber', acao: 'acessar' }
@@ -182,7 +205,7 @@ export const menuConfig = [
       {
         id: 'contas-pagar',
         label: 'Contas a Pagar',
-        icon: TrendingUp,
+        icon: TrendingDown,
         rota: '/financeiro/contas-pagar',
         descricao: 'Despesas e fornecedores',
         permissao: { modulo: 'contasPagar', acao: 'acessar' }
@@ -192,16 +215,20 @@ export const menuConfig = [
         label: 'Controle de Caixa',
         icon: CreditCard,
         rota: '/financeiro/caixa',
-        descricao: 'Abertura, fechamento e movimentações',
+        descricao: 'Abertura, fechamento e movimentações de caixa',
         permissao: { modulo: 'caixa', acao: 'acessar' }
       }
     ]
   },
-  
+
+  // ============================================
+  // 5. RELATÓRIOS & ANALYTICS - Análises e insights
+  // ============================================
   {
     id: 'relatorios',
     label: 'Relatórios',
     icon: BarChart3,
+    descricao: 'Relatórios, análises e dashboards',
     submenus: [
       {
         id: 'frequencia-relatorio',
@@ -216,16 +243,44 @@ export const menuConfig = [
         label: 'Financeiro',
         icon: BarChart3,
         rota: '/relatorios/financeiro',
-        descricao: 'Relatórios financeiros e dashboards',
+        descricao: 'Relatórios e dashboards financeiros',
         permissao: { modulo: 'relatorioFinanceiro', acao: 'acessar' }
+      },
+      {
+        id: 'inadimplencia-relatorio',
+        label: 'Inadimplência',
+        icon: AlertCircle,
+        rota: '/relatorios/inadimplencia',
+        descricao: 'Análise de alunos inadimplentes',
+        permissao: { modulo: 'relatorioInadimplencia', acao: 'acessar' }
+      },
+      {
+        id: 'desempenho-relatorio',
+        label: 'Desempenho',
+        icon: TrendingUp,
+        rota: '/relatorios/desempenho',
+        descricao: 'Métricas de desempenho operacional',
+        permissao: { modulo: 'relatorioDesempenho', acao: 'acessar' }
+      },
+      {
+        id: 'gerencial-relatorio',
+        label: 'Gerencial',
+        icon: PieChart,
+        rota: '/relatorios/gerencial',
+        descricao: 'Relatórios gerenciais e executivos',
+        permissao: { modulo: 'relatorioGerencial', acao: 'acessar' }
       }
     ]
   },
-  
+
+  // ============================================
+  // 6. CONFIGURAÇÕES - Administração do sistema
+  // ============================================
   {
     id: 'configuracoes',
     label: 'Configurações',
     icon: Settings,
+    descricao: 'Administração e configurações do sistema',
     submenus: [
       {
         id: 'dados-academia',
@@ -277,7 +332,7 @@ export const filtrarMenusPorPermissao = (menus, verificarPermissao) => {
         .filter(submenu => {
           // Se não tem permissão definida, mostra para todos
           if (!submenu.permissao) return true;
-          
+
           // Se tem submenus (segundo nível)
           if (submenu.hasSubmenus && submenu.submenus) {
             // Verifica se tem pelo menos um sub-submenu permitido
@@ -287,7 +342,7 @@ export const filtrarMenusPorPermissao = (menus, verificarPermissao) => {
             });
             return subSubmenusPermitidos.length > 0;
           }
-          
+
           // Verifica permissão do submenu
           return verificarPermissao(submenu.permissao.modulo, submenu.permissao.acao);
         })
@@ -317,27 +372,37 @@ export const filtrarMenusPorPermissao = (menus, verificarPermissao) => {
 /**
  * Mapeamento de IDs de submenu para nome do módulo de permissão
  * Útil para verificações rápidas
+ * ATUALIZADO: Inclui novos módulos de relatórios
  */
 export const MAPA_SUBMENU_MODULO = {
+  // Pessoas
   'alunos': 'alunos',
   'funcionarios': 'funcionarios',
+  'instrutores': 'instrutores',
+  'visitantes': 'visitantes',
+  // Operacional
   'matriculas': 'matriculas',
   'turmas': 'turmas',
   'frequencia': 'frequencia',
-  'visitantes': 'visitantes',
-  'instrutores': 'instrutores',
+  'equipamentos': 'equipamentos',
+  // Cadastros & Referência
+  'planos': 'planos',
+  'modalidades': 'modalidades',
+  'descontos': 'descontos',
   'locais': 'locais',
   'funcoes': 'funcoes',
-  'planos': 'planos',
-  'descontos': 'descontos',
-  'modalidades': 'modalidades',
-  'equipamentos': 'equipamentos',
+  // Financeiro
   'mensalidades': 'mensalidades',
   'contas-receber': 'contasReceber',
   'contas-pagar': 'contasPagar',
   'caixa': 'caixa',
+  // Relatórios & Analytics
   'frequencia-relatorio': 'relatorioFrequencia',
   'financeiro-relatorio': 'relatorioFinanceiro',
+  'inadimplencia-relatorio': 'relatorioInadimplencia',
+  'desempenho-relatorio': 'relatorioDesempenho',
+  'gerencial-relatorio': 'relatorioGerencial',
+  // Configurações
   'dados-academia': 'dadosAcademia',
   'usuarios': 'usuarios',
   'licencas': 'licencas',

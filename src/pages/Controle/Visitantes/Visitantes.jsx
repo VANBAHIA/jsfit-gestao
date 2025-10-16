@@ -6,6 +6,10 @@ import { visitantesService } from '../../../services/api/visitantesService';
 import VisitanteForm from './VisitanteForm';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
 import { format } from 'date-fns';
+import { usePermissoes } from '../../../hooks/usePermissoes';
+import BotaoPermissao from '../../../components/common/BotaoPermissao';
+
+
 
 function Visitantes() {
   const [visitantes, setVisitantes] = useState([]);
@@ -15,6 +19,7 @@ function Visitantes() {
   const [visitanteSelecionado, setVisitanteSelecionado] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, visitante: null });
   const [salvando, setSalvando] = useState(false);
+  const { temPermissao } = usePermissoes();
 
   const [filtros, setFiltros] = useState({
     busca: '',
@@ -156,13 +161,16 @@ function Visitantes() {
               <p className="text-sm text-gray-600">Total: {visitantesFiltrados.length} visitantes</p>
             </div>
           </div>
-          <button
+          <BotaoPermissao
+            modulo="visitantes"
+            acao="criar"
             onClick={handleNovoVisitante}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-semibold shadow-md"
+            title="Novo Vitante"
           >
             <Plus size={20} />
             Novo Visitante
-          </button>
+          </BotaoPermissao>
         </div>
 
         {/* Filtros */}
@@ -263,26 +271,30 @@ function Visitantes() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
-                    {visitante.funcionario 
+                    {visitante.funcionario
                       ? `${visitante.funcionario.pessoa?.nome1}`
                       : 'Não informado'}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      <button
+                      <BotaoPermissao
+                        modulo="visitantes"
+                        acao="editar"
                         onClick={() => handleEditarVisitante(visitante)}
                         className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
                         title="Editar"
                       >
                         <Edit size={18} />
-                      </button>
-                      <button
+                      </BotaoPermissao>
+                      <BotaoPermissao
+                        modulo="visitantes"
+                        acao="excluir"
                         onClick={() => handleConfirmarExclusao(visitante)}
                         className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
                         title="Excluir"
                       >
                         <Trash2 size={18} />
-                      </button>
+                      </BotaoPermissao>
                     </div>
                   </td>
                 </tr>

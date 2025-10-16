@@ -3,6 +3,9 @@ import { Percent, Search, Loader, Edit, Trash2, Plus, Filter, X, DollarSign } fr
 import { descontosService } from '../../../services/api/descontosService';
 import DescontoForm from './DescontoForm';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
+import { usePermissoes } from '../../../hooks/usePermissoes';
+import BotaoPermissao from '../../../components/common/BotaoPermissao';
+
 
 function Descontos() {
   const [descontos, setDescontos] = useState([]);
@@ -12,6 +15,7 @@ function Descontos() {
   const [descontoSelecionado, setDescontoSelecionado] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, desconto: null });
   const [salvando, setSalvando] = useState(false);
+  const { temPermissao } = usePermissoes();
 
   const [filtros, setFiltros] = useState({
     busca: '',
@@ -27,10 +31,10 @@ function Descontos() {
     try {
       setLoading(true);
       const resposta = await descontosService.listarTodos();
-      
+
       const descontosData = resposta.data?.data || resposta.data || {};
       const descontosArray = descontosData.descontos || [];
-      
+
       setDescontos(descontosArray);
       setErro(null);
     } catch (error) {
@@ -141,13 +145,15 @@ function Descontos() {
               <p className="text-sm text-gray-600">Total: {descontosFiltrados.length} descontos cadastrados</p>
             </div>
           </div>
-          <button 
+          <BotaoPermissao
+            modulo="descontos"
+            acao="criar"
             onClick={handleNovoDesconto}
             className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 font-semibold shadow-md transition-colors"
           >
             <Plus size={20} />
             Novo Desconto
-          </button>
+          </BotaoPermissao>
         </div>
 
         {/* Filtros */}
@@ -226,9 +232,8 @@ function Descontos() {
                   <tr key={desconto.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${
-                          desconto.tipo === 'PERCENTUAL' ? 'bg-purple-50' : 'bg-green-50'
-                        }`}>
+                        <div className={`p-2 rounded-lg ${desconto.tipo === 'PERCENTUAL' ? 'bg-purple-50' : 'bg-green-50'
+                          }`}>
                           <IconeTipo className={
                             desconto.tipo === 'PERCENTUAL' ? 'text-purple-600' : 'text-green-600'
                           } size={18} />
@@ -239,11 +244,10 @@ function Descontos() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                        desconto.tipo === 'PERCENTUAL'
-                          ? 'bg-purple-100 text-purple-800'
-                          : 'bg-green-100 text-green-800'
-                      }`}>
+                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${desconto.tipo === 'PERCENTUAL'
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-green-100 text-green-800'
+                        }`}>
                         {desconto.tipo === 'PERCENTUAL' ? 'Percentual' : 'Monetário'}
                       </span>
                     </td>
@@ -253,30 +257,35 @@ function Descontos() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                        desconto.status === 'ATIVO'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${desconto.status === 'ATIVO'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                        }`}>
                         {desconto.status || 'ATIVO'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
-                        <button 
+                        <BotaoPermissao
+                          modulo="descontos"
+                          acao="editar"
+
                           onClick={() => handleEditarDesconto(desconto)}
-                          className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" 
+                          className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
                           title="Editar desconto"
                         >
                           <Edit size={18} />
-                        </button>
-                        <button 
+                        </BotaoPermissao>
+                        <BotaoPermissao
+                          modulo="descontos"
+                          acao="excluir"
+
                           onClick={() => handleConfirmarExclusao(desconto)}
-                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors" 
+                          className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                           title="Excluir desconto"
                         >
                           <Trash2 size={18} />
-                        </button>
+                        </BotaoPermissao>
                       </div>
                     </td>
                   </tr>

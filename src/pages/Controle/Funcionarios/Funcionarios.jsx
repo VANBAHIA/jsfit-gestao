@@ -5,6 +5,8 @@ import { funcoesService } from '../../../services/api/funcoesService';
 import FuncionarioForm from './FuncionarioForm';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
 import { format } from 'date-fns';
+import { usePermissoes } from '../../../hooks/usePermissoes';
+import BotaoPermissao from '../../../components/common/BotaoPermissao';
 
 function Funcionarios() {
   const [funcionarios, setFuncionarios] = useState([]);
@@ -71,41 +73,41 @@ function Funcionarios() {
     }
   };
 
-const handleSalvarFuncionario = async (dados) => {
+  const handleSalvarFuncionario = async (dados) => {
     try {
-        setSalvando(true);
+      setSalvando(true);
 
-        if (funcionarioSelecionado) {
-            // ✅ ATUALIZAÇÃO: Também precisa enviar no formato correto
-            await funcionariosService.atualizar(funcionarioSelecionado.id, {
-                pessoa: dados.pessoa,
-                funcionario: {  // ✅ AGRUPADO AQUI
-                    funcaoId: dados.funcionario.funcaoId,
-                    dataAdmissao: dados.funcionario.dataAdmissao,
-                    dataDemissao: dados.funcionario.dataDemissao,
-                    salario: dados.funcionario.salario,
-                    situacao: dados.funcionario.situacao,
-                    ...(dados.funcionario.controleAcesso?.senha && {
-                        controleAcesso: dados.funcionario.controleAcesso
-                    })
-                }
-            });
-        } else {
-            // ✅ CRIAÇÃO: Já vem no formato correto do form
-            await funcionariosService.criar(dados);
-        }
+      if (funcionarioSelecionado) {
+        // ✅ ATUALIZAÇÃO: Também precisa enviar no formato correto
+        await funcionariosService.atualizar(funcionarioSelecionado.id, {
+          pessoa: dados.pessoa,
+          funcionario: {  // ✅ AGRUPADO AQUI
+            funcaoId: dados.funcionario.funcaoId,
+            dataAdmissao: dados.funcionario.dataAdmissao,
+            dataDemissao: dados.funcionario.dataDemissao,
+            salario: dados.funcionario.salario,
+            situacao: dados.funcionario.situacao,
+            ...(dados.funcionario.controleAcesso?.senha && {
+              controleAcesso: dados.funcionario.controleAcesso
+            })
+          }
+        });
+      } else {
+        // ✅ CRIAÇÃO: Já vem no formato correto do form
+        await funcionariosService.criar(dados);
+      }
 
-        setMostrarForm(false);
-        setFuncionarioSelecionado(null);
-        await carregarDados();
+      setMostrarForm(false);
+      setFuncionarioSelecionado(null);
+      await carregarDados();
     } catch (error) {
-        console.error('❌ Erro:', error.response?.data || error.message);
-        alert('Erro ao salvar: ' + (error.response?.data?.message || error.message));
+      console.error('❌ Erro:', error.response?.data || error.message);
+      alert('Erro ao salvar: ' + (error.response?.data?.message || error.message));
     } finally {
-        setSalvando(false);
+      setSalvando(false);
     }
-};
-  
+  };
+
   const handleConfirmarExclusao = (funcionario) => {
     setConfirmDelete({ isOpen: true, funcionario });
   };
@@ -203,11 +205,14 @@ const handleSalvarFuncionario = async (dados) => {
               <p className="text-sm text-gray-600">Total: {funcionariosFiltrados.length} funcionários</p>
             </div>
           </div>
-          <button onClick={handleNovoFuncionario}
+          <BotaoPermissao
+            modulo="funcionarios"
+            acao="criar"
+            onClick={handleNovoFuncionario}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-semibold shadow-md">
             <Plus size={20} />
             Novo Funcionário
-          </button>
+          </BotaoPermissao>
         </div>
 
         {/* Filtros */}
@@ -307,27 +312,51 @@ const handleSalvarFuncionario = async (dados) => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      <button onClick={() => handleEditarFuncionario(funcionario)}
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg" title="Editar">
+                      <BotaoPermissao
+                        modulo="funcionarios"
+                        acao="editar"
+                        onClick={() => handleEditarFuncionario(funcionario)}
+                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                        title="Editar aluno"
+                      >
                         <Edit size={18} />
-                      </button>
+                      </BotaoPermissao>
 
                       {!funcionario.dtDemissao ? (
-                        <button onClick={() => handleDemitir(funcionario)}
-                          className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg" title="Demitir">
+                        <BotaoPermissao
+                          modulo="funcionarios"
+                          acao="demitir"
+                          onClick={() => handleDemitir(funcionario)}
+                          className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg"
+                          title="Demitir"
+                        >
                           <UserX size={18} />
-                        </button>
-                      ) : (
-                        <button onClick={() => handleReativar(funcionario)}
-                          className="p-2 text-green-600 hover:bg-green-100 rounded-lg" title="Reativar">
-                          <UserCheck size={18} />
-                        </button>
-                      )}
+                        </BotaoPermissao>
 
-                      <button onClick={() => handleConfirmarExclusao(funcionario)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg" title="Excluir">
+
+                      ) : (
+                        <BotaoPermissao
+                          modulo="funcionarios"
+                          acao="reativar"
+                          onClick={() => handleReativar(funcionario)}
+                          className="p-2 text-green-600 hover:bg-green-100 rounded-lg"
+                          title="Reativar"
+                        >
+                          <UserCheck size={18} />
+                        </BotaoPermissao>
+
+
+                      )}
+                      <BotaoPermissao
+                        modulo="funcionarios"
+                        acao="excluir"
+                        onClick={() => handleConfirmarExclusao(funcionario)}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                        title="Excluir aluno"
+                      >
                         <Trash2 size={18} />
-                      </button>
+                      </BotaoPermissao>
+
                     </div>
                   </td>
                 </tr>

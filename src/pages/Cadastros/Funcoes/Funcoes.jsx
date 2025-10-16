@@ -3,6 +3,9 @@ import { Briefcase, Search, Loader, Edit, Trash2, Plus, Filter, X } from 'lucide
 import { funcoesService } from '../../../services/api/funcoesService';
 import FuncaoForm from './FuncaoForm';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
+import { usePermissoes } from '../../../hooks/usePermissoes';
+import BotaoPermissao from '../../../components/common/BotaoPermissao';
+
 
 function Funcoes() {
   const [funcoes, setFuncoes] = useState([]);
@@ -17,6 +20,9 @@ function Funcoes() {
     busca: '',
     status: ''
   });
+  const { temPermissao } = usePermissoes();
+
+
 
   useEffect(() => {
     carregarDados();
@@ -26,10 +32,10 @@ function Funcoes() {
     try {
       setLoading(true);
       const resposta = await funcoesService.listarTodos();
-      
+
       const funcoesData = resposta.data?.data || resposta.data || {};
       const funcoesArray = funcoesData.funcoes || [];
-      
+
       setFuncoes(funcoesArray);
       setErro(null);
     } catch (error) {
@@ -128,11 +134,14 @@ function Funcoes() {
               <p className="text-sm text-gray-600">Total: {funcoesFiltradas.length} funções cadastradas</p>
             </div>
           </div>
-          <button onClick={handleNovaFuncao}
+          <BotaoPermissao
+            modulo="funcoes"
+            acao="criar"
+            onClick={handleNovaFuncao}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-semibold shadow-md">
             <Plus size={20} />
             Nova Função
-          </button>
+          </BotaoPermissao>
         </div>
 
         {/* Filtros */}
@@ -205,26 +214,31 @@ function Funcoes() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                      funcao.status === 'ATIVO'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${funcao.status === 'ATIVO'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                      }`}>
                       {funcao.status || 'ATIVO'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      <button onClick={() => handleEditarFuncao(funcao)}
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" 
+                      <BotaoPermissao
+                        modulo="funcoes"
+                        acao="editar"
+                         onClick={() => handleEditarFuncao(funcao)}
+                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Editar função">
                         <Edit size={18} />
-                      </button>
-                      <button onClick={() => handleConfirmarExclusao(funcao)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors" 
+                      </BotaoPermissao>
+                      <BotaoPermissao
+                        modulo="funcoes"
+                        acao="excluir"
+                         onClick={() => handleConfirmarExclusao(funcao)}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                         title="Excluir função">
                         <Trash2 size={18} />
-                      </button>
+                      </BotaoPermissao>
                     </div>
                   </td>
                 </tr>

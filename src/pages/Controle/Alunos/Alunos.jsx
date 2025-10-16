@@ -6,6 +6,7 @@ import ConfirmDialog from '../../../components/common/ConfirmDialog';
 import { usePermissoes } from '../../../hooks/usePermissoes';
 import BotaoPermissao from '../../../components/common/BotaoPermissao';
 
+
 function Alunos() {
   const [alunos, setAlunos] = useState([]);
   const [loading, setLoading] = useState(true);

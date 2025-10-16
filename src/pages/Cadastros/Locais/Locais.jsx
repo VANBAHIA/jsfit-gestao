@@ -3,6 +3,11 @@ import { MapPin, Search, Loader, Edit, Trash2, Plus, Filter, X } from 'lucide-re
 import { locaisService } from '../../../services/api/locaisService';
 import LocalForm from './LocalForm';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
+import { usePermissoes } from '../../../hooks/usePermissoes';
+import BotaoPermissao from '../../../components/common/BotaoPermissao';
+
+
+
 
 function Locais() {
   const [locais, setLocais] = useState([]);
@@ -12,7 +17,7 @@ function Locais() {
   const [localSelecionado, setLocalSelecionado] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, local: null });
   const [salvando, setSalvando] = useState(false);
-
+  const { temPermissao } = usePermissoes();
   const [filtros, setFiltros] = useState({
     busca: '',
     status: ''
@@ -26,10 +31,10 @@ function Locais() {
     try {
       setLoading(true);
       const resposta = await locaisService.listarTodos();
-      
+
       const locaisData = resposta.data?.data || resposta.data || {};
       const locaisArray = locaisData.locais || [];
-      
+
       setLocais(locaisArray);
       setErro(null);
     } catch (error) {
@@ -128,11 +133,14 @@ function Locais() {
               <p className="text-sm text-gray-600">Total: {locaisFiltrados.length} locais cadastrados</p>
             </div>
           </div>
-          <button onClick={handleNovoLocal}
+          <BotaoPermissao
+            modulo="locais"
+            acao="criar"
+            on onClick={handleNovoLocal}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-semibold shadow-md">
             <Plus size={20} />
             Novo Local
-          </button>
+          </BotaoPermissao>
         </div>
 
         {/* Filtros */}
@@ -205,26 +213,31 @@ function Locais() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                      local.status === 'ATIVO'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
+                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${local.status === 'ATIVO'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                      }`}>
                       {local.status || 'ATIVO'}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      <button onClick={() => handleEditarLocal(local)}
-                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors" 
+                      <BotaoPermissao
+                        modulo="locais"
+                        acao="editar"
+                        onClick={() => handleEditarLocal(local)}
+                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Editar local">
                         <Edit size={18} />
-                      </button>
-                      <button onClick={() => handleConfirmarExclusao(local)}
-                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors" 
+                      </BotaoPermissao>
+                      <BotaoPermissao
+                        modulo="locais"
+                        acao="excluir"
+                        onClick={() => handleConfirmarExclusao(local)}
+                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                         title="Excluir local">
                         <Trash2 size={18} />
-                      </button>
+                      </BotaoPermissao>
                     </div>
                   </td>
                 </tr>

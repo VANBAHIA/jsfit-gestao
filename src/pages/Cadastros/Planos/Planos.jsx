@@ -3,6 +3,9 @@ import { CreditCard, Search, Loader, Edit, Trash2, Plus, Filter, X } from 'lucid
 import { planosService } from '../../../services/api/planosService';
 import PlanoForm from './PlanoForm';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
+import { usePermissoes } from '../../../hooks/usePermissoes';
+import BotaoPermissao from '../../../components/common/BotaoPermissao';
+
 
 function Planos() {
   const [planos, setPlanos] = useState([]);
@@ -12,6 +15,8 @@ function Planos() {
   const [planoSelecionado, setPlanoSelecionado] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, plano: null });
   const [salvando, setSalvando] = useState(false);
+  const { temPermissao } = usePermissoes();
+
 
   const [filtros, setFiltros] = useState({
     busca: '',
@@ -157,11 +162,14 @@ function Planos() {
               <p className="text-sm text-gray-600">Total: {planosFiltrados.length} planos cadastrados</p>
             </div>
           </div>
-          <button onClick={handleNovoPlano}
+          <BotaoPermissao
+            modulo="planos"
+            acao="criar"
+            onClick={handleNovoPlano}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-semibold shadow-md">
             <Plus size={20} />
             Novo Plano
-          </button>
+          </BotaoPermissao>
         </div>
 
         {/* Filtros */}
@@ -296,16 +304,22 @@ function Planos() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      <button onClick={() => handleEditarPlano(plano)}
+                      <BotaoPermissao
+                        modulo="planos"
+                        acao="editar"
+                        onClick={() => handleEditarPlano(plano)}
                         className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
                         title="Editar plano">
                         <Edit size={18} />
-                      </button>
-                      <button onClick={() => handleConfirmarExclusao(plano)}
+                      </BotaoPermissao>
+                      <BotaoPermissao
+                        modulo="planos"
+                        acao="excluir"
+                        onClick={() => handleConfirmarExclusao(plano)}
                         className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                         title="Excluir plano">
                         <Trash2 size={18} />
-                      </button>
+                      </BotaoPermissao>
                     </div>
                   </td>
                 </tr>
