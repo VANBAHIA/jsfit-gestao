@@ -13,6 +13,14 @@ export const empresasService = {
     const response = await api.get('/empresas', { params });
     return response;
   },
+  /**
+ * Busca empresa por CNPJ (público - para login)
+ * @param {string} cnpj - CNPJ da empresa
+ */
+  buscarPorCNPJ: async (cnpj) => {
+    const response = await api.post('/empresas/buscar-cnpj', { cnpj });
+    return response;
+  },
 
   /**
    * Busca uma empresa específica por ID
@@ -60,4 +68,6 @@ export const empresasService = {
     const response = await api.delete(`/empresas/${id}`);
     return response;
   }
+
+
 };

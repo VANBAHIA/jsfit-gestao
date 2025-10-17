@@ -1,15 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import authService from '../services/api/authService';
+import { loginCache } from '../utils/loginCache'; // ✅ ADICIONAR
 
-/**
- * Contexto de Autenticação
- * Gerencia o estado global de autenticação do usuário
- */
 const AuthContext = createContext(null);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  
   if (!context) {
     throw new Error('useAuth deve ser usado dentro de um AuthProvider');
   }
@@ -21,14 +17,10 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [autenticado, setAutenticado] = useState(false);
 
-  // Verifica autenticação ao carregar o app
   useEffect(() => {
     verificarAutenticacao();
   }, []);
 
-  /**
-   * Verifica se há um usuário autenticado
-   */
   const verificarAutenticacao = async () => {
     try {
       const token = authService.getToken();
@@ -38,7 +30,6 @@ export const AuthProvider = ({ children }) => {
         const usuarioLogado = authService.getUsuarioLogado();
         console.log('👤 Usuário no storage:', usuarioLogado);
         
-        // Valida o token no backend
         const tokenValido = await authService.validarToken();
         console.log('✔️ Token válido:', tokenValido);
         
@@ -47,7 +38,6 @@ export const AuthProvider = ({ children }) => {
           setAutenticado(true);
           console.log('✅ Usuário autenticado:', usuarioLogado.nome);
         } else {
-          // Token inválido, faz logout
           console.log('⚠️ Token inválido, fazendo logout');
           authService.logout();
           setUsuario(null);
@@ -67,23 +57,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Realiza login
-   * @param {Object} credenciais - {nomeUsuario, senha}
-   */
   const login = async (credenciais) => {
     try {
       console.log('🔐 Tentando login para:', credenciais.nomeUsuario);
       const resposta = await authService.login(credenciais);
       
       if (resposta.success) {
-        // ✅ Recupera o usuário salvo no sessionStorage (que foi salvo pelo authService)
         const usuarioLogado = authService.getUsuarioLogado();
         
         console.log('✅ Login bem-sucedido:', usuarioLogado?.nome);
         console.log('👤 Usuário com perfil:', usuarioLogado?.perfil);
         
-        // ✅ Salva o objeto completo do usuário no contexto
+        // ✅ NOVO: Salvar cache da última empresa logada
+        if (usuarioLogado?.empresa) {
+          loginCache.salvarUltimaEmpresa({
+            id: usuarioLogado.empresa.id,
+            nomeFantasia: usuarioLogado.empresa.nomeFantasia,
+            razaoSocial: usuarioLogado.empresa.razaoSocial,
+            cnpj: usuarioLogado.empresa.cnpj,
+            logo: usuarioLogado.empresa.logo,
+            ultimoUsuario: credenciais.nomeUsuario
+          });
+        }
+        
         setUsuario(usuarioLogado);
         setAutenticado(true);
         
@@ -101,42 +97,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Realiza logout
-   */
   const logout = () => {
     console.log('🚪 Fazendo logout');
     authService.logout();
     setUsuario(null);
     setAutenticado(false);
+    // NÃO limpar cache - mantém empresa para próximo acesso
   };
 
-  /**
-   * Verifica se usuário tem perfil específico
-   * @param {string|string[]} perfis
-   */
   const temPerfil = (perfis) => {
     return authService.temPerfil(perfis);
   };
 
-  /**
-   * Verifica se usuário tem permissão específica
-   * @param {string} permissao
-   */
   const temPermissao = (permissao) => {
     return authService.temPermissao(permissao);
   };
 
-  /**
-   * Verifica se a licença está válida
-   */
   const licencaValida = () => {
     return authService.licencaValida();
   };
 
-  /**
-   * Atualiza dados do usuário no contexto
-   */
   const atualizarUsuario = (dadosAtualizados) => {
     const usuarioAtualizado = { ...usuario, ...dadosAtualizados };
     setUsuario(usuarioAtualizado);
@@ -154,12 +134,6 @@ export const AuthProvider = ({ children }) => {
     licencaValida,
     atualizarUsuario
   };
-
-  console.log('📦 AuthProvider renderizando com value:', {
-    usuario: value.usuario?.nome || 'null',
-    autenticado: value.autenticado,
-    loading: value.loading
-  });
 
   return (
     <AuthContext.Provider value={value}>

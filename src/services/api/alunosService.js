@@ -1,5 +1,6 @@
 import api from './axiosConfig';
 
+
 export const alunosService = {
   listarTodos: async (params = {}) => {
     const response = await api.get('/alunos', { params });

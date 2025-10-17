@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Plus, Trash2, MapPin, Phone } from 'lucide-react';
+import { useAuth } from '../../../context/AuthContext';
 
 function AlunoForm({ aluno, onSalvar, onCancelar }) {
+  const { usuario } = useAuth();
   const [abaSelecionada, setAbaSelecionada] = useState('principal');
   const [formData, setFormData] = useState({
     pessoaId: '',
@@ -28,96 +30,100 @@ function AlunoForm({ aluno, onSalvar, onCancelar }) {
     }
   });
 
+
   useEffect(() => {
-  if (aluno) {
-    console.log('🔍 Aluno recebido no form:', JSON.stringify(aluno, null, 2));
+    if (aluno) {
+      console.log('🔍 Aluno recebido no form:', JSON.stringify(aluno, null, 2));
 
-    const formatarData = (data) => {
-      if (!data) return '';
-      return data.split('T')[0];
-    };
+      const formatarData = (data) => {
+        if (!data) return '';
+        return data.split('T')[0];
+      };
 
-    setFormData({
-      pessoaId: aluno.pessoaId || aluno.pessoa?.id || '',
-      pessoa: {
-        codigo: aluno.pessoa?.codigo || '',
-        nome1: aluno.pessoa?.nome1 || '',
-        nome2: aluno.pessoa?.nome2 || '',
-        doc1: aluno.pessoa?.doc1 || '',
-        doc2: aluno.pessoa?.doc2 || '',
-        dtNsc: formatarData(aluno.pessoa?.dtNsc),
-        situacao: aluno.pessoa?.situacao || 'ATIVO'
-      },
-      enderecos: aluno.pessoa?.enderecos || [],
-      contatos: aluno.pessoa?.contatos || [],
-      vldExameMedico: formatarData(aluno.vldExameMedico),
-      vldAvaliacao: formatarData(aluno.vldAvaliacao),
-      objetivo: aluno.objetivo || '',
-      profissao: aluno.profissao || '',
-      empresa: aluno.empresa || '',
-      responsavel: aluno.responsavel || null,
-      horarios: aluno.horarios || [],
-      controleAcesso: {
-        senha: '', // ✅ Sempre vazio (não exibe hash)
-        senhaAtual: aluno.controleAcesso?.senha || '', // ✅ Guarda hash
-        impressaoDigital1: aluno.controleAcesso?.impressaoDigital1 || '',
-        impressaoDigital2: aluno.controleAcesso?.impressaoDigital2 || ''
-      }
-    });
+      setFormData({
+        pessoaId: aluno.pessoaId || aluno.pessoa?.id || '',
+        pessoa: {
+          codigo: aluno.pessoa?.codigo || '',
+          nome1: aluno.pessoa?.nome1 || '',
+          nome2: aluno.pessoa?.nome2 || '',
+          doc1: aluno.pessoa?.doc1 || '',
+          doc2: aluno.pessoa?.doc2 || '',
+          dtNsc: formatarData(aluno.pessoa?.dtNsc),
+          situacao: aluno.pessoa?.situacao || 'ATIVO'
+        },
+        enderecos: aluno.pessoa?.enderecos || [],
+        contatos: aluno.pessoa?.contatos || [],
+        vldExameMedico: formatarData(aluno.vldExameMedico),
+        vldAvaliacao: formatarData(aluno.vldAvaliacao),
+        objetivo: aluno.objetivo || '',
+        profissao: aluno.profissao || '',
+        empresa: aluno.empresa || '',
+        responsavel: aluno.responsavel || null,
+        horarios: aluno.horarios || [],
+        controleAcesso: {
+          senha: '', // ✅ Sempre vazio (não exibe hash)
+          senhaAtual: aluno.controleAcesso?.senha || '', // ✅ Guarda hash
+          impressaoDigital1: aluno.controleAcesso?.impressaoDigital1 || '',
+          impressaoDigital2: aluno.controleAcesso?.impressaoDigital2 || ''
+        }
+      });
 
-    console.log('✅ FormData preenchido');
-  }
-}, [aluno]);
+      console.log('✅ FormData preenchido');
+    }
+  }, [aluno]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const dadosParaSalvar = {
-      pessoa: {
-        ...(formData.pessoa.codigo && { codigo: formData.pessoa.codigo }),
-        tipo: 'FISICA',
-        nome1: formData.pessoa.nome1,
-        nome2: formData.pessoa.nome2 || '',
-        doc1: formData.pessoa.doc1,
-        doc2: formData.pessoa.doc2 || '',
-        dtNsc: formData.pessoa.dtNsc || null,
-        situacao: formData.pessoa.situacao,
-        enderecos: formData.enderecos,
-        contatos: formData.contatos
-      },
-      vldExameMedico: formData.vldExameMedico || null,
-      vldAvaliacao: formData.vldAvaliacao || null,
-      objetivo: formData.objetivo || '',
-      profissao: formData.profissao || '',
-      empresa: formData.empresa || '',
-      responsavel: formData.responsavel || null,
-      horarios: formData.horarios || [],
-controleAcesso: {
-  // Se preencheu nova senha, envia. Senão, mantém a atual (se houver)
-  ...(formData.controleAcesso.senha 
-    ? { senha: formData.controleAcesso.senha } 
-    : formData.controleAcesso.senhaAtual 
-      ? { senha: formData.controleAcesso.senhaAtual } 
-      : {}
-  ),
-  impressaoDigital1: formData.controleAcesso.impressaoDigital1 || null,
-  impressaoDigital2: formData.controleAcesso.impressaoDigital2 || null
-}
-    };
-
-    onSalvar(dadosParaSalvar);
-  };
-
-  const handleChange = (campo, valor) => {
-    setFormData(prev => ({ ...prev, [campo]: valor }));
-  };
-
-  const handlePessoaChange = (campo, valor) => {
+    const handlePessoaChange = (campo, valor) => {
     setFormData(prev => ({
       ...prev,
       pessoa: { ...prev.pessoa, [campo]: valor }
     }));
   };
+
+  const handleSubmit = (e) => {
+  e.preventDefault();
+  const empresaId = usuario?.empresa?.id;
+
+
+  console.log('📦 empresaId obtido:', empresaId);
+
+  const dadosParaSalvar = {
+    pessoa: {
+      ...(formData.pessoa.codigo && { codigo: formData.pessoa.codigo }),
+      tipo: 'FISICA',
+      // ✅ Empresa na Pessoa (para criar/atualizar a pessoa)
+      empresa: { connect: { id: empresaId } }  ,
+      nome1: formData.pessoa.nome1,
+      nome2: formData.pessoa.nome2 || '',
+      doc1: formData.pessoa.doc1,
+      doc2: formData.pessoa.doc2 || '',
+      dtNsc: formData.pessoa.dtNsc || null,
+      situacao: formData.pessoa.situacao,
+      enderecos: formData.enderecos,
+      contatos: formData.contatos
+    },
+    vldExameMedico: formData.vldExameMedico || null,
+    vldAvaliacao: formData.vldAvaliacao || null,
+    objetivo: formData.objetivo || '',
+    profissao: formData.profissao || '',  
+    responsavel: formData.responsavel || null,
+    horarios: formData.horarios || [],
+    controleAcesso: {
+      // Se preencheu nova senha, envia. Senão, mantém a atual (se houver)
+      ...(formData.controleAcesso.senha
+        ? { senha: formData.controleAcesso.senha }
+        : formData.controleAcesso.senhaAtual
+          ? { senha: formData.controleAcesso.senhaAtual }
+          : {}
+      ),
+      impressaoDigital1: formData.controleAcesso.impressaoDigital1 || null,
+      impressaoDigital2: formData.controleAcesso.impressaoDigital2 || null
+    }
+  };
+
+  console.log('✅ Dados a salvar:', JSON.stringify(dadosParaSalvar, null, 2));
+
+  onSalvar(dadosParaSalvar);
+};
 
   // ENDEREÇOS
   const adicionarEndereco = () => {

@@ -5,7 +5,7 @@ import AlunoForm from './AlunoForm';
 import ConfirmDialog from '../../../components/common/ConfirmDialog';
 import { usePermissoes } from '../../../hooks/usePermissoes';
 import BotaoPermissao from '../../../components/common/BotaoPermissao';
-
+import { useAuth } from '../../../context/AuthContext'; // 👈 IMPORTANTE
 
 function Alunos() {
   const [alunos, setAlunos] = useState([]);
@@ -15,19 +15,27 @@ function Alunos() {
   const [alunoSelecionado, setAlunoSelecionado] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, aluno: null });
   const [salvando, setSalvando] = useState(false);
-  
-  // ✅ Hook de permissões
+
+  // ✅ Hooks
   const { temPermissao } = usePermissoes();
+  const { usuario } = useAuth(); // 👈 PEGA O USUÁRIO LOGADO
 
   useEffect(() => {
-    carregarAlunos();
-  }, []);
+    if (usuario?.empresa?.id) {
+      carregarAlunos();
+    }
+  }, [usuario]);
 
   const carregarAlunos = async () => {
     try {
       setLoading(true);
-      const resposta = await alunosService.listarTodos();
+      const resposta = await alunosService.listarTodos({
+        empresaId: usuario?.empresa?.id, // 👈 EMPRESA DO USUÁRIO LOGADO
+        page: 1,
+        limit: 20,
+      });
       console.log('📦 Resposta da API:', resposta);
+
       setAlunos(resposta.data?.data || resposta.data || []);
       setErro(null);
     } catch (error) {
@@ -59,7 +67,6 @@ function Alunos() {
       setSalvando(true);
 
       if (alunoSelecionado) {
-        // ✅ EDIÇÃO
         await alunosService.atualizar(alunoSelecionado.id, {
           pessoa: dados.pessoa,
           aluno: {
@@ -70,11 +77,10 @@ function Alunos() {
             empresa: dados.empresa,
             responsavel: dados.responsavel,
             horarios: dados.horarios,
-            controleAcesso: dados.controleAcesso.senha ? dados.controleAcesso : undefined
-          }
+            controleAcesso: dados.controleAcesso.senha ? dados.controleAcesso : undefined,
+          },
         });
       } else {
-        // ✅ CRIAÇÃO
         await alunosService.criar({
           pessoa: dados.pessoa,
           aluno: {
@@ -85,8 +91,8 @@ function Alunos() {
             empresa: dados.empresa,
             responsavel: dados.responsavel,
             horarios: dados.horarios,
-            controleAcesso: dados.controleAcesso
-          }
+            controleAcesso: dados.controleAcesso,
+          },
         });
       }
 
@@ -126,9 +132,7 @@ function Alunos() {
   return (
     <div className="p-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        {/* ============================================ */}
-        {/* 🎯 HEADER COM BOTÃO "NOVO ALUNO" */}
-        {/* ============================================ */}
+        {/* HEADER */}
         <div className="p-6 border-b flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -140,7 +144,6 @@ function Alunos() {
             </div>
           </div>
 
-          {/* ✅ BOTÃO COM VERIFICAÇÃO DE PERMISSÃO */}
           <BotaoPermissao
             modulo="alunos"
             acao="criar"
@@ -152,18 +155,14 @@ function Alunos() {
           </BotaoPermissao>
         </div>
 
-        {/* ============================================ */}
-        {/* ⚠️ MENSAGEM DE ERRO */}
-        {/* ============================================ */}
+        {/* ERRO */}
         {erro && (
           <div className="m-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             {erro}
           </div>
         )}
 
-        {/* ============================================ */}
-        {/* 📊 TABELA DE ALUNOS */}
-        {/* ============================================ */}
+        {/* TABELA */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -188,15 +187,11 @@ function Alunos() {
             <tbody className="divide-y divide-gray-200">
               {alunos.map((aluno) => (
                 <tr key={aluno.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {aluno.matricula}
-                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{aluno.matricula}</td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">
                     {aluno.pessoa?.nome1 || 'Sem nome'}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {aluno.pessoa?.doc1 || 'N/A'}
-                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{aluno.pessoa?.doc1 || 'N/A'}</td>
                   <td className="px-6 py-4">
                     <span
                       className={`px-3 py-1 text-xs font-semibold rounded-full ${
@@ -208,13 +203,8 @@ function Alunos() {
                       {aluno.pessoa?.situacao || 'N/A'}
                     </span>
                   </td>
-                  
-                  {/* ============================================ */}
-                  {/* 🎯 AÇÕES COM VERIFICAÇÃO DE PERMISSÃO */}
-                  {/* ============================================ */}
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-center gap-2">
-                      {/* ✅ BOTÃO EDITAR - Só aparece se tiver permissão */}
                       <BotaoPermissao
                         modulo="alunos"
                         acao="editar"
@@ -225,7 +215,6 @@ function Alunos() {
                         <Edit size={18} />
                       </BotaoPermissao>
 
-                      {/* ✅ BOTÃO EXCLUIR - Só aparece se tiver permissão */}
                       <BotaoPermissao
                         modulo="alunos"
                         acao="excluir"
@@ -243,26 +232,21 @@ function Alunos() {
           </table>
         </div>
 
-        {/* ============================================ */}
-        {/* 📭 MENSAGEM DE LISTA VAZIA */}
-        {/* ============================================ */}
+        {/* LISTA VAZIA */}
         {alunos.length === 0 && !erro && (
           <div className="p-8 text-center text-gray-500">
             <Users className="mx-auto mb-3 text-gray-400" size={48} />
             <p className="text-lg font-medium">Nenhum aluno cadastrado</p>
             <p className="text-sm mt-1">
-              {temPermissao('alunos', 'criar') 
+              {temPermissao('alunos', 'criar')
                 ? 'Clique em "Novo Aluno" para começar'
-                : 'Você não tem permissão para cadastrar alunos'
-              }
+                : 'Você não tem permissão para cadastrar alunos'}
             </p>
           </div>
         )}
       </div>
 
-      {/* ============================================ */}
-      {/* 📝 MODAL DE FORMULÁRIO */}
-      {/* ============================================ */}
+      {/* FORM */}
       {mostrarForm && (
         <AlunoForm
           aluno={alunoSelecionado}
@@ -275,13 +259,11 @@ function Alunos() {
         />
       )}
 
-      {/* ============================================ */}
-      {/* 🗑️ MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
-      {/* ============================================ */}
+      {/* CONFIRMAÇÃO DE EXCLUSÃO */}
       <ConfirmDialog
         isOpen={confirmDelete.isOpen}
         titulo="Confirmar Exclusão"
-        mensagem={`Tem certeza que deseja excluir o aluno ${confirmDelete.aluno?.pessoa?.nome1}? Todos os dados relacionados serão permanentemente removidos.`}
+        mensagem={`Tem certeza que deseja excluir o aluno ${confirmDelete.aluno?.pessoa?.nome1}?`}
         onConfirmar={handleExcluirAluno}
         onCancelar={() => setConfirmDelete({ isOpen: false, aluno: null })}
       />

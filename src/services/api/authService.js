@@ -121,12 +121,27 @@ export const authService = {
    * Verifica se a licença está válida
    * @returns {boolean}
    */
-  licencaValida: () => {
-    const usuario = authService.getUsuarioLogado();
-    if (!usuario?.licenca) return false;
+/**
+ * Verifica se a licença está válida
+ * @returns {boolean}
+ */
+licencaValida: () => {
+  const usuario = authService.getUsuarioLogado();
+  if (!usuario?.licenca) return false;
 
-    return usuario.licenca.diasRestantes > 0;
+  // ✅ SUPER_ADMIN ou ADMIN têm licença sempre válida
+  if (usuario.perfil === 'SUPER_ADMIN' || usuario.perfil === 'ADMIN') {
+    return true;
   }
+
+  // ✅ Aceitar '∞' como válido
+  if (usuario.licenca.diasRestantes === '∞' || usuario.licenca.diasRestantes === Infinity) {
+    return true;
+  }
+
+  // Verificação normal para outros usuários
+  return usuario.licenca.diasRestantes > 0;
+}
 };
 
 // Interceptor para adicionar token em todas as requisições
