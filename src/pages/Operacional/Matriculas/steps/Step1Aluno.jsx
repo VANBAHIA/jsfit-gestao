@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, UserPlus, Users, Loader, Check } from 'lucide-react';
 import { alunosService } from '../../../../services/api/alunosService';
-import AlunoForm from '../../../Controle/Alunos/AlunoForm';
+import AlunoForm from '../../../Pessoas/Alunos/AlunoForm';
 
 function Step1Aluno({ alunoSelecionado, onSelecionarAluno }) {
   const [alunos, setAlunos] = useState([]);

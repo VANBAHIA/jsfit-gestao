@@ -151,6 +151,14 @@ export const menuConfig = [
         permissao: { modulo: 'modalidades', acao: 'acessar' }
       },
       {
+      id: 'grupos-exercicio',
+      label: 'Grupos de Exercício',
+      icon: Dumbbell,
+      rota: '/cadastros/grupos-exercicio',
+      descricao: 'Grupos musculares e categorias de exercícios',
+      permissao: { modulo: 'modalidades', acao: 'acessar' }
+    },
+      {
         id: 'descontos',
         label: 'Descontos & Promoções',
         icon: Percent,

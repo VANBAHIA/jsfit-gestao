@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, UserCheck, Search } from 'lucide-react';
 import { funcionariosService } from '../../../../services/api/funcionariosService';
-import FuncionarioForm from '../../../Controle/Funcionarios/FuncionarioForm';
+import FuncionarioForm from '../../../Pessoas/Funcionarios/FuncionarioForm';
 
 function InstrutoresTab({ instrutores, onChange }) {
   const [funcionarios, setFuncionarios] = useState([]);

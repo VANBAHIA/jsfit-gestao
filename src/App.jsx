@@ -13,25 +13,31 @@ import ConfirmDialog from './components/common/ConfirmDialog';
 
 
 // Importação dos componentes de páginas
-import Alunos from './pages/Controle/Alunos/Alunos';
-import Funcionarios from './pages/Controle/Funcionarios/Funcionarios';
+import Alunos from './pages/Pessoas/Alunos/Alunos';
+import Funcionarios from './pages/Pessoas/Funcionarios/Funcionarios';
+import Visitantes from './pages/Pessoas/Visitantes/Visitantes';
+import Descontos from './pages/Cadastros/Descontos/Descontos';
 import Funcoes from './pages/Cadastros/Funcoes/Funcoes';
+import GruposExercicio from './pages/Cadastros/GruposExercicio/GruposExercicio';
 import Locais from './pages/Cadastros/Locais/Locais';
 import Planos from './pages/Cadastros/Planos/Planos';
-import Turmas from './pages/Cadastros/Turmas/Turmas';
-import Descontos from './pages/Cadastros/Descontos/Descontos';
-import Matriculas from './pages/Controle/Matriculas/Matriculas';
+
+import Empresa from './pages/Configuracoes/Empresa/Empresa';
+import Usuarios from './pages/Configuracoes/Usuarios/Usuarios';
+import Licencas from './pages/Configuracoes/Licencas/Licencas';
+
 import ContasReceber from './pages/Financeiro/ContasReceber/ContasReceber';
 import ContasPagar from './pages/Financeiro/ContasPagar/ContasPagar';
 import Caixa from './pages/Financeiro/Caixa/Caixa';
-import Empresa from './pages/Configuracoes/Empresa/Empresa';
-import Usuarios from './pages/Configuracoes/Usuarios/Usuarios';
-import Visitantes from './pages/Controle/Visitantes/Visitantes';
-import Frequencia from './pages/Controle/Frequencia/Frequencia';
-import FrequenciaRelatorio from './pages/Controle/Frequencia/FrequenciaRelatorio';
-import Licencas from './pages/Configuracoes/Licencas/Licencas';
-import RelatorioFinanceiro from './pages/Relatorios/RelatorioFinanceiro/RelatorioFinanceiro';
 import Equipamentos from './pages/Operacional/Equipamentos/Equipamentos';
+import Frequencia from './pages/Operacional/Frequencia/Frequencia';
+import FrequenciaRelatorio from './pages/Operacional/Frequencia/FrequenciaRelatorio';
+import Matriculas from './pages/Operacional/Matriculas/Matriculas';
+import Turmas from './pages/Operacional/Turmas/Turmas';
+
+import RelatorioFinanceiro from './pages/Relatorios/RelatorioFinanceiro/RelatorioFinanceiro';
+
+
 
 
 
@@ -54,7 +60,7 @@ function App() {
   }, [autenticado, temPermissao]);
 
 
-  
+
   // Se está carregando, mostra loading
   if (loading) {
     return (
@@ -147,7 +153,8 @@ function App() {
       'descontos': <Descontos />,
       'matriculas': <Matriculas />,
       'frequencia': <Frequencia />,
-      'equipamentos': <Equipamentos />, 
+      'equipamentos': <Equipamentos />,
+      'grupos-exercicio': <GruposExercicio />,
       'contas-receber': <ContasReceber />,
       'contas-pagar': <ContasPagar />,
       'caixa': <Caixa />,
@@ -396,8 +403,8 @@ function App() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 px-4 py-2.5 border-r border-gray-200 transition-all whitespace-nowrap ${activeTab === tab.id
-                        ? 'bg-white text-blue-600 font-semibold border-t-2 border-t-blue-600 -mt-[2px]'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'bg-white text-blue-600 font-semibold border-t-2 border-t-blue-600 -mt-[2px]'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                   >
                     <TabIcon size={16} />
