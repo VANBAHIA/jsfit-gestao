@@ -23,6 +23,7 @@ export const visitantesService = {
    * Criar novo visitante
    */
   criar: async (dados) => {
+  console.log(dados);
     const response = await api.post('/visitantes', dados);
     return response.data;
   },

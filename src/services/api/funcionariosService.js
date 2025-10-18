@@ -12,12 +12,14 @@ export const funcionariosService = {
   },
 
   criar: async (dados) => {
+    
     const response = await api.post('/funcionarios', dados);
 console.log(dados);
     return response.data;
   },
 
   atualizar: async (id, dados) => {
+   
     const response = await api.put(`/funcionarios/${id}`, dados);
     return response.data;
   },

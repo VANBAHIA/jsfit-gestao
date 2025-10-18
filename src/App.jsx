@@ -31,6 +31,8 @@ import Frequencia from './pages/Controle/Frequencia/Frequencia';
 import FrequenciaRelatorio from './pages/Controle/Frequencia/FrequenciaRelatorio';
 import Licencas from './pages/Configuracoes/Licencas/Licencas';
 import RelatorioFinanceiro from './pages/Relatorios/RelatorioFinanceiro/RelatorioFinanceiro';
+import Equipamentos from './pages/Operacional/Equipamentos/Equipamentos';
+
 
 
 
@@ -145,6 +147,7 @@ function App() {
       'descontos': <Descontos />,
       'matriculas': <Matriculas />,
       'frequencia': <Frequencia />,
+      'equipamentos': <Equipamentos />, 
       'contas-receber': <ContasReceber />,
       'contas-pagar': <ContasPagar />,
       'caixa': <Caixa />,

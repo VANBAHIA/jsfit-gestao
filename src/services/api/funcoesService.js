@@ -37,6 +37,7 @@ export const funcoesService = {
    * @returns {Promise} Resposta da API com função criada
    */
   criar: async (dados) => {
+    console.log(dados)
     try {
       const response = await api.post('/funcoes', dados);
       return response.data;
@@ -53,8 +54,10 @@ export const funcoesService = {
    * @returns {Promise} Resposta da API com função atualizada
    */
   atualizar: async (id, dados) => {
+    
     try {
       const response = await api.put(`/funcoes/${id}`, dados);
+      
       return response.data;
     } catch (error) {
       console.error(`❌ Erro ao atualizar função ${id}:`, error);

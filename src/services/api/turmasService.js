@@ -45,6 +45,7 @@ export const turmasService = {
    */
   criar: async (dados) => {
     try {
+      console.log(dados);
       if (!dados.nome || !dados.nome.trim()) {
         throw new Error('Nome da turma é obrigatório');
       }
@@ -68,6 +69,7 @@ export const turmasService = {
    */
   atualizar: async (id, dados) => {
     try {
+      console.log(dados);
       if (!id) {
         throw new Error('ID da turma é obrigatório');
       }
