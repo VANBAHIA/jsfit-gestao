@@ -15,35 +15,35 @@ export const gruposExercicioService = {
       ...(busca && { busca })
     });
 
-    return await api.get(`/grupos-exercicio?${queryParams}`);
+    return await api.get(`/gruposexercicio?${queryParams}`);
   },
 
   /**
    * Busca um grupo de exercício por ID
    */
   async buscarPorId(id) {
-    return await api.get(`/grupos-exercicio/${id}`);
+    return await api.get(`/gruposexercicio/${id}`);
   },
 
   /**
    * Cria um novo grupo de exercício
    */
   async criar(dados) {
-    return await api.post('/grupos-exercicio', dados);
+    return await api.post('/gruposexercicio', dados);
   },
 
   /**
    * Atualiza um grupo de exercício existente
    */
   async atualizar(id, dados) {
-    return await api.put(`/grupos-exercicio/${id}`, dados);
+    return await api.put(`/gruposexercicio/${id}`, dados);
   },
 
   /**
    * Exclui um grupo de exercício
    */
   async excluir(id) {
-    return await api.delete(`/grupos-exercicio/${id}`);
+    return await api.delete(`/gruposexercicio/${id}`);
   }
 };
 

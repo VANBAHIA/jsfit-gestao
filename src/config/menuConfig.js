@@ -23,7 +23,8 @@ import {
   Key,
   AlertCircle,
   TrendingDown,
-  PieChart
+  PieChart,
+  Activity // Novo ícone para Exercícios
 } from 'lucide-react';
 
 /**
@@ -143,21 +144,21 @@ export const menuConfig = [
         permissao: { modulo: 'planos', acao: 'acessar' }
       },
       {
-        id: 'modalidades',
-        label: 'Modalidades',
+        id: 'gruposexercicio',
+        label: 'Grupos de Exercício',
         icon: Dumbbell,
-        rota: '/cadastros/modalidades',
-        descricao: 'Tipos de atividades oferecidas',
+        rota: '/cadastros/gruposexercicio',
+        descricao: 'Grupos musculares e categorias de exercícios',
         permissao: { modulo: 'modalidades', acao: 'acessar' }
       },
       {
-      id: 'grupos-exercicio',
-      label: 'Grupos de Exercício',
-      icon: Dumbbell,
-      rota: '/cadastros/grupos-exercicio',
-      descricao: 'Grupos musculares e categorias de exercícios',
-      permissao: { modulo: 'modalidades', acao: 'acessar' }
-    },
+        id: 'exercicios',
+        label: 'Exercícios',
+        icon: Activity,
+        rota: '/cadastros/exercicios',
+        descricao: 'Biblioteca de exercícios e movimentos',
+        permissao: { modulo: 'exercicios', acao: 'acessar' }
+      },
       {
         id: 'descontos',
         label: 'Descontos & Promoções',
@@ -380,7 +381,7 @@ export const filtrarMenusPorPermissao = (menus, verificarPermissao) => {
 /**
  * Mapeamento de IDs de submenu para nome do módulo de permissão
  * Útil para verificações rápidas
- * ATUALIZADO: Inclui novos módulos de relatórios
+ * ATUALIZADO: Inclui novos módulos de relatórios e exercícios
  */
 export const MAPA_SUBMENU_MODULO = {
   // Pessoas
@@ -396,6 +397,8 @@ export const MAPA_SUBMENU_MODULO = {
   // Cadastros & Referência
   'planos': 'planos',
   'modalidades': 'modalidades',
+  'gruposexercicio': 'gruposexercicio',
+  'exercicios': 'exercicios',
   'descontos': 'descontos',
   'locais': 'locais',
   'funcoes': 'funcoes',

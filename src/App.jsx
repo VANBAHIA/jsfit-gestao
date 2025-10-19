@@ -36,7 +36,7 @@ import Matriculas from './pages/Operacional/Matriculas/Matriculas';
 import Turmas from './pages/Operacional/Turmas/Turmas';
 
 import RelatorioFinanceiro from './pages/Relatorios/RelatorioFinanceiro/RelatorioFinanceiro';
-
+import Exercicios from './pages/Cadastros/Exercicios/Exercicios';
 
 
 
@@ -154,7 +154,8 @@ function App() {
       'matriculas': <Matriculas />,
       'frequencia': <Frequencia />,
       'equipamentos': <Equipamentos />,
-      'grupos-exercicio': <GruposExercicio />,
+      'exercicios': <Exercicios />, // ✅ CORRIGIDO - com 'S' no final
+      'gruposexercicio': <GruposExercicio />,
       'contas-receber': <ContasReceber />,
       'contas-pagar': <ContasPagar />,
       'caixa': <Caixa />,
@@ -164,6 +165,7 @@ function App() {
       'frequencia-relatorio': <FrequenciaRelatorio />,
       'financeiro-relatorio': <RelatorioFinanceiro />
     };
+
 
     // Retorna o componente específico ou o padrão
     return componentMap[tab.submenuId] || (
