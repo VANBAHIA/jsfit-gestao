@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, Dumbbell, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { exerciciosService } from '../../../services/api/exerciciosService';
 
 function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
   const [formData, setFormData] = useState({
@@ -13,11 +14,12 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
   const [erros, setErros] = useState({});
   const [novoMusculo, setNovoMusculo] = useState('');
   const [previewImagem, setPreviewImagem] = useState('');
+  const [uploadando, setUploadando] = useState(false);
   const fileInputRef = useRef(null);
 
   // Lista de músculos sugeridos
   const musculosSugeridos = [
-    'Peitoral Maior', 'Peitoral Menor', 'Deltoide Anterior', 'Deltoide Lateral', 
+    'Peitoral Maior', 'Peitoral Menor', 'Deltoide Anterior', 'Deltoide Lateral',
     'Deltoide Posterior', 'Bíceps', 'Tríceps', 'Antebraço', 'Trapézio',
     'Latíssimo do Dorso', 'Romboides', 'Infraespinal', 'Lombar', 'Abdômen',
     'Oblíquos', 'Quadríceps', 'Isquiotibiais', 'Glúteos', 'Panturrilha', 'Adutores'
@@ -26,7 +28,7 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
   useEffect(() => {
     if (exercicio) {
       const dadosExercicio = exercicio.data || exercicio;
-      
+
       setFormData({
         nome: dadosExercicio.nome || '',
         descricao: dadosExercicio.descricao || '',
@@ -78,7 +80,7 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
 
   const handleChange = (campo, valor) => {
     setFormData(prev => ({ ...prev, [campo]: valor }));
-    
+
     if (erros[campo]) {
       setErros(prev => {
         const novosErros = { ...prev };
@@ -111,36 +113,66 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
     setPreviewImagem(url);
   };
 
-  const handleFileSelect = (e) => {
+  const handleFileSelect = async (e) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Validar tipo de arquivo
-      if (!file.type.startsWith('image/')) {
-        alert('Por favor, selecione apenas arquivos de imagem (JPG, PNG, GIF)');
-        return;
+    if (!file) return;
+
+    console.log('📤 Iniciando upload:', file.name);
+
+    // Validar tipo
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione apenas arquivos de imagem (JPG, PNG, GIF)');
+      return;
+    }
+
+    // Validar tamanho (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('A imagem deve ter no máximo 5MB');
+      return;
+    }
+
+    // Preview local imediato
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewImagem(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    // Se está editando um exercício existente, faz upload
+    if (exercicio?.id) {
+      try {
+        setUploadando(true); // ✅ MUDOU DE setSalvando PARA setUploadando
+
+        const formData = new FormData();
+        formData.append('imagem', file);
+
+        console.log('📡 Enviando para:', `/exercicios/${exercicio.id}/imagem`);
+
+        const response = await exerciciosService.uploadImagem(exercicio.id, formData);
+
+        console.log('✅ Upload concluído:', response.data);
+
+        // Ajuste baseado na estrutura de resposta do seu backend
+        const imagemUrl = response.data.data?.imagemUrl || response.data.imagemUrl;
+        handleChange('imagemUrl', imagemUrl);
+
+        alert('Imagem enviada com sucesso!');
+      } catch (error) {
+        console.error('❌ Erro no upload:', error);
+        alert('Erro ao fazer upload: ' + (error.response?.data?.message || error.message));
+        setPreviewImagem('');
+      } finally {
+        setUploadando(false); // ✅ MUDOU DE setSalvando PARA setUploadando
       }
+    } else {
+      // Se é novo, aguarda salvar primeiro
+      alert('Salve o exercício primeiro antes de adicionar a imagem');
+      setPreviewImagem('');
+    }
 
-      // Validar tamanho (máx 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('A imagem deve ter no máximo 5MB');
-        return;
-      }
-
-      // Criar preview local
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImagem(reader.result);
-      };
-      reader.readAsDataURL(file);
-
-      // Simular upload - na prática, você enviaria para o servidor
-      // e receberia a URL de volta
-      const nomeArquivo = `exercicio_${Date.now()}_${file.name}`;
-      const urlSimulada = `/imagens/exercicios/${nomeArquivo}`;
-      handleChange('imagemUrl', urlSimulada);
-      
-      // Aqui você faria o upload real:
-      // await exerciciosService.uploadImagem(exercicio.id, file);
+    // Limpar input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -160,8 +192,8 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
           <h3 className="text-2xl font-bold text-white">
             {exercicio ? 'Editar Exercício' : 'Novo Exercício'}
           </h3>
-          <button 
-            onClick={onCancelar} 
+          <button
+            onClick={onCancelar}
             disabled={salvando}
             className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 disabled:opacity-50"
           >
@@ -184,9 +216,8 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
                     required
                     value={formData.nome}
                     onChange={(e) => handleChange('nome', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                      erros.nome ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${erros.nome ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     placeholder="Ex: Supino Reto, Agachamento Livre"
                     maxLength={100}
                   />
@@ -223,9 +254,8 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
                   <textarea
                     value={formData.descricao}
                     onChange={(e) => handleChange('descricao', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none ${
-                      erros.descricao ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none ${erros.descricao ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     placeholder="Descreva como executar o exercício..."
                     rows={4}
                     maxLength={500}
@@ -243,7 +273,7 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Músculos Trabalhados
                   </label>
-                  
+
                   {/* Músculos Adicionados */}
                   {formData.musculos.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
@@ -294,11 +324,10 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
                           type="button"
                           onClick={() => handleSelecionarMusculoSugerido(musculo)}
                           disabled={formData.musculos.includes(musculo)}
-                          className={`px-2 py-1 text-xs rounded border transition-all ${
-                            formData.musculos.includes(musculo)
+                          className={`px-2 py-1 text-xs rounded border transition-all ${formData.musculos.includes(musculo)
                               ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                               : 'bg-white text-gray-700 border-gray-300 hover:border-purple-400 hover:bg-purple-50'
-                          }`}
+                            }`}
                         >
                           {musculo}
                         </button>
@@ -364,20 +393,38 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
                         onChange={handleFileSelect}
                         className="hidden"
                         id="file-upload"
+                        disabled={uploadando} // ✅ ADICIONAR
                       />
                       <label
                         htmlFor="file-upload"
-                        className="flex-1 px-4 py-3 border-2 border-gray-300 border-dashed rounded-lg hover:border-purple-400 cursor-pointer flex items-center justify-center gap-2 bg-white hover:bg-purple-50 transition-colors"
+                        className={`flex-1 px-4 py-3 border-2 border-gray-300 border-dashed rounded-lg hover:border-purple-400 cursor-pointer flex items-center justify-center gap-2 bg-white hover:bg-purple-50 transition-colors ${uploadando ? 'opacity-50 cursor-not-allowed' : '' // ✅ ADICIONAR
+                          }`}
                       >
-                        <Upload size={20} className="text-gray-600" />
-                        <span className="text-sm text-gray-700 font-medium">
-                          Selecionar arquivo (JPG, PNG, GIF)
-                        </span>
+                        {uploadando ? ( // ✅ ADICIONAR INDICADOR
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-purple-600 border-t-transparent"></div>
+                            <span className="text-sm text-purple-700 font-medium">
+                              Enviando...
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload size={20} className="text-gray-600" />
+                            <span className="text-sm text-gray-700 font-medium">
+                              Selecionar arquivo (JPG, PNG, GIF)
+                            </span>
+                          </>
+                        )}
                       </label>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
                       Tamanho máximo: 5MB • Formatos: JPG, PNG, GIF
                     </p>
+                    {uploadando && ( // ✅ ADICIONAR MENSAGEM
+                      <p className="text-xs text-purple-600 mt-2 font-medium animate-pulse">
+                        ⏳ Fazendo upload da imagem...
+                      </p>
+                    )}
                   </div>
 
                   {/* Opção 2: URL da Imagem */}

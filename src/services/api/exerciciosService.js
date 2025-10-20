@@ -50,16 +50,12 @@ export const exerciciosService = {
   /**
    * Upload de imagem do exercício
    */
-  async uploadImagem(id, arquivo) {
-    const formData = new FormData();
-    formData.append('imagem', arquivo);
-    
-    return await api.post(`/exercicios/${id}/imagem`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-  }
+ async uploadImagem(id, formData) {
+  console.log('🚀 Service: enviando upload para exercício', id);
+  
+  // Agora o interceptor vai remover o Content-Type automaticamente
+  return await api.post(`/exercicios/${id}/imagem`, formData);
+}
 };
 
 export default exerciciosService;

@@ -136,20 +136,12 @@ export const menuConfig = [
     descricao: 'Dados de referência e configurações operacionais',
     submenus: [
       {
-        id: 'planos',
-        label: 'Planos',
-        icon: FileText,
-        rota: '/cadastros/planos',
-        descricao: 'Cadastro de planos e modalidades',
-        permissao: { modulo: 'planos', acao: 'acessar' }
-      },
-      {
-        id: 'gruposexercicio',
-        label: 'Grupos de Exercício',
-        icon: Dumbbell,
-        rota: '/cadastros/gruposexercicio',
-        descricao: 'Grupos musculares e categorias de exercícios',
-        permissao: { modulo: 'modalidades', acao: 'acessar' }
+        id: 'descontos',
+        label: 'Descontos',
+        icon: Percent,
+        rota: '/cadastros/descontos',
+        descricao: 'Cadastro de descontos e promoções',
+        permissao: { modulo: 'descontos', acao: 'acessar' }
       },
       {
         id: 'exercicios',
@@ -160,12 +152,20 @@ export const menuConfig = [
         permissao: { modulo: 'exercicios', acao: 'acessar' }
       },
       {
-        id: 'descontos',
-        label: 'Descontos & Promoções',
-        icon: Percent,
-        rota: '/cadastros/descontos',
-        descricao: 'Cadastro de descontos e promoções',
-        permissao: { modulo: 'descontos', acao: 'acessar' }
+        id: 'funcoes',
+        label: 'Funções & Cargos',
+        icon: Briefcase,
+        rota: '/cadastros/funcoes',
+        descricao: 'Cadastro de funções e cargos',
+        permissao: { modulo: 'funcoes', acao: 'acessar' }
+      },
+      {
+        id: 'gruposexercicio',
+        label: 'Grupos de Exercício',
+        icon: Dumbbell,
+        rota: '/cadastros/gruposexercicio',
+        descricao: 'Grupos musculares e categorias de exercícios',
+        permissao: { modulo: 'gruposexercicio', acao: 'acessar' }
       },
       {
         id: 'locais',
@@ -176,13 +176,15 @@ export const menuConfig = [
         permissao: { modulo: 'locais', acao: 'acessar' }
       },
       {
-        id: 'funcoes',
-        label: 'Funções & Cargos',
-        icon: Briefcase,
-        rota: '/cadastros/funcoes',
-        descricao: 'Cadastro de funções e cargos',
-        permissao: { modulo: 'funcoes', acao: 'acessar' }
+        id: 'planos',
+        label: 'Planos',
+        icon: FileText,
+        rota: '/cadastros/planos',
+        descricao: 'Cadastro de planos e modalidades',
+        permissao: { modulo: 'planos', acao: 'acessar' }
       }
+
+
     ]
   },
 

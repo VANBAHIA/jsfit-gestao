@@ -10,6 +10,7 @@ import { usePermissoes } from '../../../hooks/usePermissoes';
 import BotaoPermissao from '../../../components/common/BotaoPermissao';
 
 
+
 function Usuarios() {
   // ⭐ Use assim
   const [erroDelete, setErroDelete] = useState({ isOpen: false, mensagem: '' });
@@ -25,6 +26,7 @@ function Usuarios() {
   const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, usuario: null });
   const [salvando, setSalvando] = useState(false);
   const [empresaId, setEmpresaId] = useState(null);
+  const [empresas, setEmpresas] = useState([]);
 
   const [filtros, setFiltros] = useState({
     busca: '',
@@ -32,8 +34,24 @@ function Usuarios() {
     situacao: ''
   });
 
+  const carregarTodasEmpresas = async () => {
+    try {
+      const resposta = await empresasService.listarTodos({ limit: 100 });
+      const empresasData = resposta.data?.data || resposta.data || {};
+      const empresasArray = empresasData.empresas || [];
+      setEmpresas(empresasArray);
+    } catch (error) {
+      console.error('❌ Erro ao carregar empresas:', error);
+    }
+  };
+
+  const getNomeEmpresa = (empresaId) => {
+    const empresa = empresas.find(e => e.id === empresaId);
+    return empresa?.nomeFantasia || empresa?.razaoSocial || 'Não informado';
+  };
   useEffect(() => {
     carregarEmpresa();
+    carregarTodasEmpresas();
   }, []);
 
   useEffect(() => {
@@ -307,7 +325,7 @@ function Usuarios() {
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Usuário</th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">Contato</th>
                 <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Perfil</th>
-                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Permissões</th>
+                <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Empresa</th>
                 <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
                 <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase">Ações</th>
               </tr>
@@ -350,23 +368,14 @@ function Usuarios() {
                         {usuario.perfil}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1 justify-center">
-                        {usuario.permissoes?.slice(0, 3).map((perm, idx) => (
-                          <span
-                            key={idx}
-                            className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded"
-                          >
-                            {perm}
-                          </span>
-                        ))}
-                        {usuario.permissoes?.length > 3 && (
-                          <span className="px-2 py-0.5 text-xs bg-gray-200 text-gray-700 rounded font-semibold">
-                            +{usuario.permissoes.length - 3}
-                          </span>
-                        )}
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                          🏢 {getNomeEmpresa(usuario.empresaId)}
+                        </span>
                       </div>
                     </td>
+
                     <td className="px-6 py-4 text-center">
                       <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${usuario.situacao === 'ATIVO'
                         ? 'bg-green-100 text-green-800'

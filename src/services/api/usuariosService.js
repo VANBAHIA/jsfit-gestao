@@ -21,6 +21,8 @@ export const usuariosService = {
     return response;
   },
 
+  
+
   /**
    * Valida um token JWT
    * @param {string} token - Token JWT
@@ -37,6 +39,17 @@ export const usuariosService = {
   listarTodos: async (params = {}) => {
     const response = await api.get('/usuarios', { params });
     return response;
+  },
+
+  excluir: async (id) => {
+    try {
+      if (!id) throw new Error('ID do desconto é obrigatório');
+      const response = await api.delete(`/usuarios/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`❌ Erro ao excluir Usuário ${id}:`, error);
+      throw error;
+    }
   },
 
   /**

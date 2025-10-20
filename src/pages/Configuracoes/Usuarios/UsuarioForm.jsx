@@ -4,7 +4,7 @@ import { AuthContext } from '../../../context/AuthContext';
 
 function UsuarioForm({ usuario, onSalvar, onCancelar, empresaId }) {
   const { usuario: usuarioLogado } = useContext(AuthContext);
-  
+
   const [formData, setFormData] = useState({
     empresaId: empresaId || '',
     nomeUsuario: '',
@@ -27,7 +27,7 @@ function UsuarioForm({ usuario, onSalvar, onCancelar, empresaId }) {
   useEffect(() => {
     if (usuario) {
       const dadosUsuario = usuario.data || usuario;
-      
+
       // ✅ CORREÇÃO: Trata permissões vindas do backend
       let permissoesProcessadas = {
         modulos: {},
@@ -68,15 +68,21 @@ function UsuarioForm({ usuario, onSalvar, onCancelar, empresaId }) {
     e.preventDefault();
 
     // Validação de senha
-    if (!usuario && formData.senha !== formData.confirmarSenha) {
+    const senha = formData.senha.trim();
+    const confirmarSenha = formData.confirmarSenha.trim();
+
+    if (!usuario && senha !== confirmarSenha) {
       setErroSenha('As senhas não coincidem');
       return;
     }
 
-    if (!usuario && formData.senha.length < 6) {
+    if (!usuario && senha.length < 6) {
       setErroSenha('A senha deve ter no mínimo 6 caracteres');
       return;
     }
+
+
+ 
 
     const dadosParaSalvar = {
       empresaId: formData.empresaId,
@@ -343,16 +349,15 @@ function UsuarioForm({ usuario, onSalvar, onCancelar, empresaId }) {
                 <Shield size={20} className="text-blue-600" />
                 Perfil de Acesso
               </h4>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {perfisDisponiveis.map((perfil) => (
                   <label
                     key={perfil.valor}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      formData.perfil === perfil.valor
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.perfil === perfil.valor
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-300'
-                    }`}
+                      }`}
                   >
                     <input
                       type="radio"
@@ -364,11 +369,10 @@ function UsuarioForm({ usuario, onSalvar, onCancelar, empresaId }) {
                     />
                     <div className="flex items-center gap-2 mb-1">
                       <div
-                        className={`w-4 h-4 rounded-full border-2 ${
-                          formData.perfil === perfil.valor
+                        className={`w-4 h-4 rounded-full border-2 ${formData.perfil === perfil.valor
                             ? 'border-blue-500 bg-blue-500'
                             : 'border-gray-300'
-                        }`}
+                          }`}
                       />
                       <span className="font-semibold text-gray-900">{perfil.label}</span>
                     </div>
