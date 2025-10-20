@@ -37,10 +37,7 @@ import Turmas from './pages/Operacional/Turmas/Turmas';
 
 import RelatorioFinanceiro from './pages/Relatorios/RelatorioFinanceiro/RelatorioFinanceiro';
 import Exercicios from './pages/Cadastros/Exercicios/Exercicios';
-
-
-
-
+import ExercicioEquipamento from './pages/Cadastros/ExercicioEquipamento/ExercicioEquipamento'; 
 
 function App() {
   const { autenticado, loading, usuario, logout } = useAuth();
@@ -154,8 +151,9 @@ function App() {
       'matriculas': <Matriculas />,
       'frequencia': <Frequencia />,
       'equipamentos': <Equipamentos />,
-      'exercicios': <Exercicios />, // ✅ CORRIGIDO - com 'S' no final
+      'exercicios': <Exercicios />, 
       'gruposexercicio': <GruposExercicio />,
+      'exercicio-equipamento': <ExercicioEquipamento />,
       'contas-receber': <ContasReceber />,
       'contas-pagar': <ContasPagar />,
       'caixa': <Caixa />,

@@ -24,8 +24,11 @@ import {
   AlertCircle,
   TrendingDown,
   PieChart,
+  Link2,
   Activity // Novo ícone para Exercícios
 } from 'lucide-react';
+
+
 
 /**
  * Configuração da estrutura de menus do sistema com permissões integradas
@@ -122,6 +125,14 @@ export const menuConfig = [
         rota: '/operacional/equipamentos',
         descricao: 'Controle de equipamentos da academia',
         permissao: { modulo: 'equipamentos', acao: 'acessar' }
+      },
+      {
+        id: 'exercicio-equipamento',
+        label: 'Exercício-Equipamento',
+        icon: Link2,  // Importe no topo
+        rota: '/cadastros/exercicio-equipamento',
+        descricao: 'Vincular exercícios a equipamentos',
+        permissao: { modulo: 'exercicioEquipamentos', acao: 'acessar' }
       }
     ]
   },
