@@ -67,33 +67,10 @@ function Alunos() {
       setSalvando(true);
 
       if (alunoSelecionado) {
-        await alunosService.atualizar(alunoSelecionado.id, {
-          pessoa: dados.pessoa,
-          aluno: {
-            vldExameMedico: dados.vldExameMedico,
-            vldAvaliacao: dados.vldAvaliacao,
-            objetivo: dados.objetivo,
-            profissao: dados.profissao,
-            empresa: dados.empresa,
-            responsavel: dados.responsavel,
-            horarios: dados.horarios,
-            controleAcesso: dados.controleAcesso.senha ? dados.controleAcesso : undefined,
-          },
-        });
+        // ✅ Envia o objeto completo, preservando avaliacaoFisica e outros campos
+        await alunosService.atualizar(alunoSelecionado.id, dados);
       } else {
-        await alunosService.criar({
-          pessoa: dados.pessoa,
-          aluno: {
-            vldExameMedico: dados.vldExameMedico,
-            vldAvaliacao: dados.vldAvaliacao,
-            objetivo: dados.objetivo,
-            profissao: dados.profissao,
-            empresa: dados.empresa,
-            responsavel: dados.responsavel,
-            horarios: dados.horarios,
-            controleAcesso: dados.controleAcesso,
-          },
-        });
+        await alunosService.criar(dados);
       }
 
       setMostrarForm(false);
@@ -194,11 +171,10 @@ function Alunos() {
                   <td className="px-6 py-4 text-sm text-gray-600">{aluno.pessoa?.doc1 || 'N/A'}</td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                        aluno.pessoa?.situacao === 'Ativo'
+                      className={`px-3 py-1 text-xs font-semibold rounded-full ${aluno.pessoa?.situacao === 'Ativo'
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
-                      }`}
+                        }`}
                     >
                       {aluno.pessoa?.situacao || 'N/A'}
                     </span>

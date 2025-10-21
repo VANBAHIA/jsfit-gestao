@@ -11,6 +11,7 @@ export const exercicioEquipamentoService = {
    */
   vincular: async (exercicioId, equipamentoId, dados = {}) => {
     try {
+      
       const response = await api.post(
         `/exercicios/${exercicioId}/equipamentos/${equipamentoId}`,
         dados

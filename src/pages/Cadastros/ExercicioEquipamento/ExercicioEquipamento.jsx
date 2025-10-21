@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 
 import {
-    BarChart3,
+  BarChart3,
   Dumbbell,
   Wrench,
   Link2,
@@ -48,8 +48,8 @@ function ExercicioEquipamento() {
     try {
       setLoading(true);
       const [resExercicios, resEquipamentos] = await Promise.all([
-        exerciciosService.listarTodos({ limit: 100 }),
-        equipamentosService.listarTodos({ limit: 100 })
+        exerciciosService.listarTodos({ limit: 1000 }),
+        equipamentosService.listarTodos({ limit: 1000 })
       ]);
 
       const exerciciosArray = resExercicios.data?.data?.data || [];
@@ -93,12 +93,15 @@ function ExercicioEquipamento() {
   );
 
   // Vincular
+
   const handleVincular = async (exercicioId, equipamentoId) => {
     try {
       const jaVinculado = vinculos.some(v => {
         if (modo === 'equipamento') {
-          return v.equipamentoId === equipamentoId;
+          // Verifica se o EXERCÍCIO já está vinculado ao equipamento selecionado
+          return v.exercicioId === exercicioId;
         } else {
+          // Verifica se o EQUIPAMENTO já está vinculado ao exercício selecionado
           return v.equipamentoId === equipamentoId;
         }
       });
@@ -115,7 +118,7 @@ function ExercicioEquipamento() {
 
       setMessageVinculo({ type: 'success', text: 'Vínculo criado com sucesso!' });
       setDescricaoUso('');
-      
+
       // Recarregar vínculos
       if (itemSelecionado) {
         carregarVinculos(itemSelecionado.id, itemSelecionado.tipo);
@@ -124,14 +127,13 @@ function ExercicioEquipamento() {
       setTimeout(() => setMessageVinculo(null), 3000);
     } catch (error) {
       console.error('Erro ao vincular:', error);
-      setMessageVinculo({ 
-        type: 'error', 
-        text: error.response?.data?.message || 'Erro ao criar vínculo' 
+      setMessageVinculo({
+        type: 'error',
+        text: error.response?.data?.message || 'Erro ao criar vínculo'
       });
       setTimeout(() => setMessageVinculo(null), 3000);
     }
   };
-
   // Desvincular
   const handleDesvincular = async (exercicioId, equipamentoId) => {
     if (!window.confirm('Tem certeza que deseja remover este vínculo?')) return;
@@ -148,9 +150,9 @@ function ExercicioEquipamento() {
       setTimeout(() => setMessageVinculo(null), 3000);
     } catch (error) {
       console.error('Erro ao desvincular:', error);
-      setMessageVinculo({ 
-        type: 'error', 
-        text: error.response?.data?.message || 'Erro ao remover vínculo' 
+      setMessageVinculo({
+        type: 'error',
+        text: error.response?.data?.message || 'Erro ao remover vínculo'
       });
       setTimeout(() => setMessageVinculo(null), 3000);
     }
@@ -217,11 +219,10 @@ function ExercicioEquipamento() {
               setItemSelecionado(null);
               setVinculos([]);
             }}
-            className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-              modo === 'equipamento'
+            className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${modo === 'equipamento'
                 ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg'
                 : 'bg-white text-gray-700 border border-gray-300 hover:border-purple-400'
-            }`}
+              }`}
           >
             <Wrench size={20} />
             Vincular por Equipamento
@@ -232,11 +233,10 @@ function ExercicioEquipamento() {
               setItemSelecionado(null);
               setVinculos([]);
             }}
-            className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-              modo === 'exercicio'
+            className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${modo === 'exercicio'
                 ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
                 : 'bg-white text-gray-700 border border-gray-300 hover:border-blue-400'
-            }`}
+              }`}
           >
             <Dumbbell size={20} />
             Vincular por Exercício
@@ -246,11 +246,10 @@ function ExercicioEquipamento() {
 
       {/* Mensagens */}
       {messageVinculo && (
-        <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
-          messageVinculo.type === 'success'
+        <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${messageVinculo.type === 'success'
             ? 'bg-green-100 border border-green-300 text-green-800'
             : 'bg-red-100 border border-red-300 text-red-800'
-        }`}>
+          }`}>
           {messageVinculo.type === 'success' ? (
             <CheckCircle size={20} />
           ) : (
@@ -294,9 +293,8 @@ function ExercicioEquipamento() {
                     <div
                       key={eq.id}
                       onClick={() => handleSelecionarItem(eq, 'equipamento')}
-                      className={`p-4 cursor-pointer transition-all ${
-                        isSelected ? 'bg-purple-50 border-l-4 border-purple-500' : 'hover:bg-gray-50'
-                      }`}
+                      className={`p-4 cursor-pointer transition-all ${isSelected ? 'bg-purple-50 border-l-4 border-purple-500' : 'hover:bg-gray-50'
+                        }`}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -396,11 +394,10 @@ function ExercicioEquipamento() {
                               acao="vincular"
                               onClick={() => handleVincular(ex.id, itemSelecionado.id)}
                               disabled={jaVinculado}
-                              className={`px-3 py-1.5 rounded transition-all font-medium text-sm flex items-center gap-1.5 flex-shrink-0 ${
-                                jaVinculado
+                              className={`px-3 py-1.5 rounded transition-all font-medium text-sm flex items-center gap-1.5 flex-shrink-0 ${jaVinculado
                                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                   : 'bg-blue-600 text-white hover:bg-blue-700'
-                              }`}
+                                }`}
                             >
                               <Plus size={16} />
                               {jaVinculado ? 'Vinculado' : 'Vincular'}
@@ -508,9 +505,8 @@ function ExercicioEquipamento() {
                     <div
                       key={ex.id}
                       onClick={() => handleSelecionarItem(ex, 'exercicio')}
-                      className={`p-4 cursor-pointer transition-all ${
-                        isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50'
-                      }`}
+                      className={`p-4 cursor-pointer transition-all ${isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : 'hover:bg-gray-50'
+                        }`}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -610,11 +606,10 @@ function ExercicioEquipamento() {
                               acao="vincular"
                               onClick={() => handleVincular(itemSelecionado.id, eq.id)}
                               disabled={jaVinculado}
-                              className={`px-3 py-1.5 rounded transition-all font-medium text-sm flex items-center gap-1.5 flex-shrink-0 ${
-                                jaVinculado
+                              className={`px-3 py-1.5 rounded transition-all font-medium text-sm flex items-center gap-1.5 flex-shrink-0 ${jaVinculado
                                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                   : 'bg-purple-600 text-white hover:bg-purple-700'
-                              }`}
+                                }`}
                             >
                               <Plus size={16} />
                               {jaVinculado ? 'Vinculado' : 'Vincular'}

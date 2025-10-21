@@ -384,6 +384,9 @@ function Matriculas() {
                   Data Início
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">
+                  Data Fim
+                </th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">
                   Vencimento
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase">
@@ -406,7 +409,7 @@ function Matriculas() {
                           {matricula.aluno?.pessoa?.nome1 || 'Sem nome'}
                         </div>
                         <div className="text-xs text-gray-500">
-                          Mat: {matricula.aluno?.matricula}
+                          Mat: {matricula.codigo}
                         </div>
                       </div>
                     </td>
@@ -425,6 +428,9 @@ function Matriculas() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {formatarData(matricula.dataInicio)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {formatarData(matricula.dataFim)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {matricula.diaVencimento ? `Dia ${matricula.diaVencimento}` : 'N/A'}
