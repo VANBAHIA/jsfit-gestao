@@ -19,11 +19,54 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
 
   // Lista de músculos sugeridos
   const musculosSugeridos = [
-    'Peitoral Maior', 'Peitoral Menor', 'Deltoide Anterior', 'Deltoide Lateral',
-    'Deltoide Posterior', 'Bíceps', 'Tríceps', 'Antebraço', 'Trapézio',
-    'Latíssimo do Dorso', 'Romboides', 'Infraespinal', 'Lombar', 'Abdômen',
-    'Oblíquos', 'Quadríceps', 'Isquiotibiais', 'Glúteos', 'Panturrilha', 'Adutores'
-  ];
+  "Abdutor largo",
+  "Adutor longo",
+  "Bíceps braquial",
+  "Bíceps femoral",
+  "Braquial anterior",
+  "Braquiorradial",
+  "Coracobraquial",
+  "Deltoide",
+  "Extensor dos dedos",
+  "Extensor radial",
+  "Extensor ulnar do carpo",
+  "Fibular",
+  "Flexor longo",
+  "Gastrocnêmio",
+  "Gêmeo",
+  "Glúteo máximo, médio e mínimo",
+  "Grande do dorso",
+  "Infraespinhal",
+  "Latíssimo do dorso",
+  "Oblíquo externo",
+  "Oblíquo interno",
+  "Obturatório",
+  "Peitoral maior",
+  "Peitoral menor",
+  "Piriforme",
+  "Quadrado do lombo",
+  "Quadrado femoral",
+  "Redondo maior",
+  "Redondo menor",
+  "Reto do abdômen",
+  "Reto femoral",
+  "Romboide",
+  "Semimembranáceo",
+  "Semitendíneo",
+  "Serrátil anterior",
+  "Sóleo",
+  "Subescapular",
+  "Supraespinhal",
+  "Tibial anterior",
+  "Tibial posterior",
+  "Trapézio",
+  "Tríceps braquial",
+  "Vasto intermédio",
+  "Vasto lateral",
+  "Vasto medial"
+];
+
+
 
   useEffect(() => {
     if (exercicio) {
