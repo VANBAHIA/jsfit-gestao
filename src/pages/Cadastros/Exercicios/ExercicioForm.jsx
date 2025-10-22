@@ -22,8 +22,8 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
   const musculosSugeridos = [
     "Abdutor largo",
     "Adutor longo",
-    "Bíceps braquial",
-    "Bíceps femoral",
+    "Biceps braquial",
+    "Biceps femoral",
     "Braquial anterior",
     "Braquiorradial",
     "Coracobraquial",
@@ -61,7 +61,7 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
     "Tibial anterior",
     "Tibial posterior",
     "Trapézio",
-    "Tríceps braquial",
+    "Triceps braquial",
     "Vasto intermédio",
     "Vasto lateral",
     "Vasto medial"
@@ -72,8 +72,8 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
   const muscleMapping = {
     "Abdutor largo": "quadriceps",
     "Abdutor longo": "quadriceps",
-    "Bíceps braquial": "biceps",
-    "Bíceps femoral": "posterior-coxa",
+    "Biceps braquial": "biceps",
+    "Biceps femoral": "posterior-coxa",
     "Braquial anterior": "biceps",
     "Braquiorradial": "antebraco-anterior",
     "Coracobraquial": "biceps",
@@ -86,6 +86,8 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
     "Gastrocnêmio": "panturrilhaposterior",
     "Gêmeo": "gluteo",
     "Glúteo máximo, médio e mínimo": "gluteo",
+    "médio e mínimo": "gluteo",
+    "Glúteo máximo": "gluteo",
     "Grande do dorso": "costas",
     "Infraespinhal": "ombro",
     "Latíssimo do dorso": "costas",
@@ -106,12 +108,13 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
     "Semitendíneo": "posterior-coxa",
     "Serrátil anterior": "abdome-lateral",
     "Sóleo": "panturrilhaposterior",
+    "Soleo": "panturrilhaposterior",
     "Subescapular": "ombro",
     "Supraespinhal": "ombro",
     "Tibial anterior": "panturrilha-anterior",
     "Tibial posterior": "panturrilhaposterior",
     "Trapézio": "costas-trapezio",
-    "Tríceps braquial": "triceps",
+    "Triceps braquial": "triceps",
     "Vasto intermédio": "quadriceps",
     "Vasto lateral": "quadriceps",
     "Vasto medial": "quadriceps"
@@ -393,27 +396,22 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
                   <div>
                     <p className="text-xs text-gray-600 mb-2 font-medium">Clique para adicionar:</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {musculosSugeridos.map((musculo) => (
-                        <button
-                          key={musculo}
-                          type="button"
-                          onClick={() => handleSelecionarMusculoSugerido(musculo)}
-                          disabled={formData.musculos.includes(musculo)}
-                          className={`px-2 py-1 text-xs rounded border transition-all ${formData.musculos.includes(musculo)
-                            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                            : 'bg-white text-gray-700 border-gray-300 hover:border-purple-400 hover:bg-purple-50'
-                            }`}
-                        >
-                          {musculo}
-                        </button>
-                      ))}
+                      {musculosSugeridos
+                        .filter(musculo => !formData.musculos.includes(musculo))
+                        .map((musculo) => (
+                          <button
+                            key={musculo}
+                            type="button"
+                            onClick={() => handleSelecionarMusculoSugerido(musculo)}
+                            className="px-2 py-1 text-xs rounded border transition-all bg-white text-gray-700 border-gray-300 hover:border-purple-400 hover:bg-purple-50"
+                          >
+                            {musculo}
+                          </button>
+                        ))}
                     </div>
                   </div>
                 </div>
               </div>
-
-
-
 
               {/* Coluna Direita - Visualizador + Imagem */}
               <div className="space-y-5">
@@ -425,104 +423,118 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
                   </label>
 
                   {/* Preview da Imagem */}
-                  <div className="mb-4">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gradient-to-br from-gray-50 to-gray-100 min-h-[200px] flex items-center justify-center relative overflow-hidden">
-                      {previewImagem ? (
-                        <>
-                          <img
-                            src={previewImagem}
-                            alt="Preview"
-                            className="max-w-full max-h-[180px] object-contain rounded"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.parentElement.querySelector('.error-message').style.display = 'block';
-                            }}
-                          />
-                          <div className="error-message hidden text-center">
-                            <ImageIcon className="text-gray-300 mx-auto mb-2" size={48} />
-                            <p className="text-sm text-gray-500">Erro ao carregar imagem</p>
+                  {/* Preview da Imagem + Dados do Exercício */}
+                  <div>
+                    <div className="border-2 border-dashed border-purple-300 rounded-lg p-4 bg-gradient-to-br from-purple-50 to-pink-50 min-h-[200px]">
+
+                      {/* Área da Imagem */}
+                      <div className="relative mb-4">
+                        <div className="bg-white rounded-lg p-3 flex items-center justify-center min-h-[180px] relative overflow-hidden border border-gray-200">
+                          {previewImagem ? (
+                            <>
+                              <img
+                                src={previewImagem}
+                                alt="Preview"
+                                className="max-w-full max-h-[180px] object-contain rounded"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.parentElement.querySelector('.error-message').style.display = 'block';
+                                }}
+                              />
+                              <div className="error-message hidden text-center">
+                                <ImageIcon className="text-gray-300 mx-auto mb-2" size={48} />
+                                <p className="text-sm text-gray-500">Erro ao carregar imagem</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={handleRemoverImagem}
+                                className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-lg transition-colors"
+                                title="Remover imagem"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          ) : (
+                            <div className="text-center">
+                              <ImageIcon className="text-gray-300 mx-auto mb-3" size={48} />
+                              <p className="text-sm text-gray-500 mb-4">Nenhuma imagem selecionada</p>
+
+                              {/* Botão de Upload Centralizado */}
+                              <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileSelect}
+                                className="hidden"
+                                id="file-upload-center"
+                                disabled={uploadando}
+                              />
+                              <label
+                                htmlFor="file-upload-center"
+                                className={`inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 cursor-pointer transition-colors shadow-md font-medium ${uploadando ? 'opacity-50 cursor-not-allowed' : ''
+                                  }`}
+                              >
+                                {uploadando ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                                    <span>Enviando...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Upload size={20} />
+                                    <span>Selecionar arquivo (JPG, PNG, GIF)</span>
+                                  </>
+                                )}
+                              </label>
+
+                              <p className="text-xs text-gray-500 mt-3">
+                                Tamanho máximo: 5MB
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+
+                      {/* Preview dos Dados do Exercício */}
+                      {formData.nome && (
+                        <div className="bg-white rounded-lg p-4 border border-purple-200">
+                          <div className="flex items-start gap-3">
+                            <div className="flex-1">
+                              <h4 className="font-bold text-lg text-gray-800 mb-2">{formData.nome}</h4>
+
+                              {formData.grupoId && (
+                                <span className="inline-block px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold mb-2">
+                                  {grupos.find(g => g.id === formData.grupoId)?.nome}
+                                </span>
+                              )}
+
+                              {formData.descricao && (
+                                <p className="text-sm text-gray-600 mb-2 line-clamp-3">{formData.descricao}</p>
+                              )}
+
+                              {formData.musculos.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {formData.musculos.slice(0, 5).map((musculo, idx) => (
+                                    <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                                      {musculo}
+                                    </span>
+                                  ))}
+                                  {formData.musculos.length > 5 && (
+                                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-medium">
+                                      +{formData.musculos.length - 5} mais
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={handleRemoverImagem}
-                            className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 shadow-lg"
-                            title="Remover imagem"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </>
-                      ) : (
-                        <div className="text-center">
-                          <ImageIcon className="text-gray-300 mx-auto mb-3" size={48} />
-                          <p className="text-sm text-gray-500">Nenhuma imagem selecionada</p>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Opção 1: Upload de Arquivo */}
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      📁 Opção 1: Upload de Arquivo
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                        id="file-upload"
-                        disabled={uploadando}
-                      />
-                      <label
-                        htmlFor="file-upload"
-                        className={`flex-1 px-4 py-3 border-2 border-gray-300 border-dashed rounded-lg hover:border-purple-400 cursor-pointer flex items-center justify-center gap-2 bg-white hover:bg-purple-50 transition-colors ${uploadando ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
-                      >
-                        {uploadando ? (
-                          <>
-                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-purple-600 border-t-transparent"></div>
-                            <span className="text-sm text-purple-700 font-medium">
-                              Enviando...
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <Upload size={20} className="text-gray-600" />
-                            <span className="text-sm text-gray-700 font-medium">
-                              Selecionar arquivo (JPG, PNG, GIF)
-                            </span>
-                          </>
-                        )}
-                      </label>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Tamanho máximo: 5MB • Formatos: JPG, PNG, GIF
-                    </p>
-                    {uploadando && (
-                      <p className="text-xs text-purple-600 mt-2 font-medium animate-pulse">
-                        ⏳ Fazendo upload da imagem...
-                      </p>
-                    )}
-                  </div>
 
-                  {/* Opção 2: URL da Imagem */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      🔗 Opção 2: URL da Imagem
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.imagemUrl}
-                      onChange={handleImagemUrlChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="https://exemplo.com/exercicio.gif"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Cole a URL de uma imagem ou GIF da internet
-                    </p>
-                  </div>
                 </div>
                 {/* Visualizador de Músculos */}
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-4">
@@ -654,45 +666,6 @@ function ExercicioForm({ exercicio, grupos, onSalvar, onCancelar, salvando }) {
 
               </div>
 
-              {/* Preview do Exercício */}
-              {formData.nome && (
-                <div className="mt-6 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
-                  <h6 className="font-semibold text-gray-800 mb-3">📋 Preview do Exercício</h6>
-                  <div className="bg-white rounded-lg p-4 border border-gray-200">
-                    <div className="flex items-start gap-4">
-                      {previewImagem && (
-                        <div className="flex-shrink-0">
-                          <img
-                            src={previewImagem}
-                            alt={formData.nome}
-                            className="w-24 h-24 object-cover rounded-lg border-2 border-purple-200"
-                          />
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <h4 className="font-bold text-lg text-gray-800 mb-1">{formData.nome}</h4>
-                        {formData.grupoId && (
-                          <span className="inline-block px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold mb-2">
-                            {grupos.find(g => g.id === formData.grupoId)?.nome}
-                          </span>
-                        )}
-                        {formData.descricao && (
-                          <p className="text-sm text-gray-600 mb-2">{formData.descricao}</p>
-                        )}
-                        {formData.musculos.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {formData.musculos.map((musculo, idx) => (
-                              <span key={idx} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                                {musculo}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
 
             </div>
 

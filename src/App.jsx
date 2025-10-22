@@ -38,6 +38,7 @@ import Turmas from './pages/Operacional/Turmas/Turmas';
 import RelatorioFinanceiro from './pages/Relatorios/RelatorioFinanceiro/RelatorioFinanceiro';
 import Exercicios from './pages/Cadastros/Exercicios/Exercicios';
 import ExercicioEquipamento from './pages/Cadastros/ExercicioEquipamento/ExercicioEquipamento'; 
+import Instrutores from './pages/Pessoas/Instrutores/Instrutores'; 
 
 function App() {
   const { autenticado, loading, usuario, logout } = useAuth();
@@ -142,7 +143,8 @@ function App() {
     const componentMap = {
       'alunos': <Alunos />,
       'funcionarios': <Funcionarios />,
-      'visitantes': <Visitantes />,
+      'instrutores': <Instrutores/>,
+      'visitantes': < Visitantes />,
       'funcoes': <Funcoes />,
       'locais': <Locais />,
       'planos': <Planos />,
